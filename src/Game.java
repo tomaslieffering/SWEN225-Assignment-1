@@ -1,3 +1,7 @@
+import Board.*;
+import Card.*;
+
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -44,7 +48,7 @@ public class Game {
 		System.out.println("*************************************************\n"
 						 + " Welcome to Cluedo! How many people are playing? \n");
 		// get the number of players playing
-		int players = -1;
+		int players;
 		do {
 			players = getNumberPlayers(sc);
 		} while (players == -1);
@@ -64,11 +68,10 @@ public class Game {
 			System.out.println("Player " + i + " is: " + p.toString());
 			i++;
 		}
-		System.out.println("");
 		System.out.println("Ready to shuffle and deal?");
 		
 		//waits for the player to say they are ready
-		boolean ready = false;
+		boolean ready;
 		do {
 			ready = getYesNo(sc);
 		} while (!ready);
@@ -79,18 +82,21 @@ public class Game {
 		for (Card c : envelope) {
 			System.out.println(c.toString());
 		}
-		System.out.println("");
 
 		for (Player p : this.players) {
 			System.out.println(p.toString() + " has the cards:\n" + p.handToString());
 		}
 
-		board = new Board();
+		//create the board
+		try {
+			board = new Board(new File("board-layout.dat"));
+		} catch (BoardFormatException e) {
+			System.out.println("Oops!\n" + e.getCause());
+		}
 
 		System.out.println("Everything is ready! Ready to start?");
 		
 		//waits for the player to say they are ready
-		ready = false;
 		do {
 			ready = getYesNo(sc);
 		} while (!ready);
@@ -145,12 +151,11 @@ public class Game {
 				}
 				if (input.equals("n")) {
 					System.out.println("Enter 'y' when you are ready!");
-					return false;
 				}
 				else {
 					System.out.println("Please enter either 'y' (yes) or 'n' (no)");
-					return false;
 				}
+				return false;
 			} catch (Exception e) {
 				System.out.println("Please enter either 'y' (yes) or 'n' (no)");
 				return false;
@@ -165,12 +170,9 @@ public class Game {
 	 */
 	public void dealDeck() {
 		// get each type of card
-		List<Card> personCards = new ArrayList<>();
-		personCards.addAll(PersonCard.getAllCards());
-		List<Card> weaponCards = new ArrayList<>();
-		weaponCards.addAll(WeaponCard.getAllCards());
-		List<Card> roomCards = new ArrayList<>();
-		roomCards.addAll(RoomCard.getAllCards());
+		List<Card> personCards = new ArrayList<>(PersonCard.getAllCards());
+		List<Card> weaponCards = new ArrayList<>(WeaponCard.getAllCards());
+		List<Card> roomCards = new ArrayList<>(RoomCard.getAllCards());
 
 		Collections.shuffle(roomCards);
 		Collections.shuffle(weaponCards);

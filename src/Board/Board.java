@@ -31,7 +31,7 @@ public class Board {
             while(scan.hasNext()) {
                 currentRow = scan.nextLine();
                 if(rowLength + 1 != currentRow.length())
-                    throw new BoardFormatException("Exception during parsing.\n\"Row Length mismatched\"");
+                    throw new BoardFormatException("Exception during board parsing.\n\"Row Length mismatched\"");
                 tileList.addAll(Board.parseRow(currentRow));
             }
 
@@ -45,7 +45,7 @@ public class Board {
             board = boardTiles;
 
         } catch (IOException e) {
-            throw new BoardFormatException("Exception during file handling.");
+            throw new BoardFormatException("Exception during board data file handling.");
         }
     }
 
@@ -54,7 +54,7 @@ public class Board {
      */
     private static List<BoardTile> parseRow(String row) throws BoardFormatException{
         if(!row.endsWith("/"))
-            throw new BoardFormatException("Exception during parsing.\n\"No '/' at end of row\"");
+            throw new BoardFormatException("Exception during board parsing.\n\"No '/' at end of row\"");
         row = row.substring(0, row.length() - 1);
         List<BoardTile> tiles = new ArrayList<>();
         for(char c : row.toCharArray()) {
@@ -93,7 +93,7 @@ public class Board {
                     tiles.add(new RoomTile(RoomTile.RoomType.HALLWAY));
                     break;
                 default:
-                    throw new BoardFormatException("Exception during parsing.\n\"Unrecognized character '" + c + "'\"");
+                    throw new BoardFormatException("Exception during board parsing.\n\"Unrecognized character '" + c + "'\"");
             }
         }
         return tiles;
