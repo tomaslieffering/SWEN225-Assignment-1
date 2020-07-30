@@ -3,7 +3,7 @@ package Card;
 import java.util.HashSet;
 import java.util.Set;
 
-public class WeaponCard extends Card {
+public class WeaponCard implements Card {
 	public enum WeaponType {
 		CANDLESTICK, DAGGER, LEAD_PIPE, REVOLVER, ROPE, SPANNER
 	}
