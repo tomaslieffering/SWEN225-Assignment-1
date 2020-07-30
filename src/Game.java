@@ -16,7 +16,20 @@ public class Game {
 	public static void main(String[] args) {
 		Game game = new Game();
 		game.initialise();
+		game.play();
 	}
+	
+	public void play() {
+		while (!isOver) {
+			for (Player p: players) {
+				//TODO Nicola to implement turn mechanic
+			}
+		}
+	}
+	
+	/**
+	 * This method initializes the state of the game, creating players, their hands, the envelope and the board
+	 */
 
 	public void initialise() {
 		Scanner sc = new Scanner(System.in);
@@ -51,8 +64,12 @@ public class Game {
 			System.out.println(c.toString() + "\n");
 		}
 		for (Player p: this.players) {
-			System.out.println(p.toString() + " has " + p.printHand());
+			System.out.println(p.toString() + " has " + p.handToString());
 		}
+		
+		board = new Board();
+		
+		System.out.println("Everything is ready! Ready to start?");
 	}
 	
 	/**
@@ -86,7 +103,11 @@ public class Game {
 		return 0;
 	}
 	
+	/**
+	 * Helper method that deal with dealing out the hands to the players and making the envelope
+	 */
 	public void dealDeck() {
+		//get each type of card
 		List<Card> personCards = new ArrayList<>();
 		personCards.addAll(PersonCard.getAllCards());
 		List<Card> weaponCards = new ArrayList<>();
@@ -98,6 +119,7 @@ public class Game {
 		Collections.shuffle(weaponCards);
 		Collections.shuffle(personCards);
 		
+		//create envelope
 		envelope.add(roomCards.get(0));
 		roomCards.remove(0);
 		envelope.add(weaponCards.get(0));
@@ -105,6 +127,7 @@ public class Game {
 		envelope.add(personCards.get(0));
 		personCards.remove(0);
 		
+		//add the rest to the deck, ready to be dealt
 		List<Card> deck = new ArrayList<>();
 		deck.addAll(roomCards);
 		deck.addAll(weaponCards);
@@ -112,6 +135,7 @@ public class Game {
 		Collections.shuffle(deck);
 		int playerToDealTo = 0;
 		
+		//deal the cards to each player
 		for (Card c: deck) {
 			players.get(playerToDealTo).giveCard(c);
 			playerToDealTo++;
