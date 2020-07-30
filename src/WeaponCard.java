@@ -12,6 +12,10 @@ public class WeaponCard extends Card {
 		this.weaponType = weaponType;
 	}
 
+	/**
+	 * Constructs and returns a set of all possible cards of this type
+	 * @return the set of cards
+	 */
 	public static Set<? extends Card> getAllCards() {
 
 		Set<WeaponCard> weaponCards = new HashSet<>();
@@ -21,6 +25,7 @@ public class WeaponCard extends Card {
 		return weaponCards;
 	}
 	
+	@Override
 	public String toString() {
 		return this.weaponType.toString();
 	}

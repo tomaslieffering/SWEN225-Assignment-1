@@ -13,6 +13,10 @@ public class PersonCard extends Card{
 		this.personType = personType;
 	}
 	
+	/**
+	 * Constructs and returns a set of all possible cards of this type
+	 * @return the set of cards
+	 */
 	public static Set<? extends Card> getAllCards() {
 		
 		Set<PersonCard> personCards = new HashSet<>();
@@ -22,6 +26,7 @@ public class PersonCard extends Card{
 		return personCards;
 	}
 	
+	@Override
 	public String toString() {
 		return this.personType.toString();
 	}

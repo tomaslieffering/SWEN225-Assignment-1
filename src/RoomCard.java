@@ -12,6 +12,10 @@ public class RoomCard extends Card {
 		this.roomType = roomType;
 	}
 
+	/**
+	 * Constructs and returns a set of all possible cards of this type
+	 * @return the set of cards
+	 */
 	public static Set<? extends Card> getAllCards() {
 
 		Set<RoomCard> roomCards = new HashSet<>();
@@ -21,6 +25,7 @@ public class RoomCard extends Card {
 		return roomCards;
 	}
 	
+	@Override
 	public String toString() {
 		return this.roomType.toString();
 	}

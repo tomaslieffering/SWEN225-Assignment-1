@@ -9,15 +9,23 @@ public class Player {
 		this.personType = personType;
 	}
 	
+	/**
+	 * Adds a dealt card to the players hand
+	 * @param toGive the card to be added to the hand
+	 */
 	public void giveCard(Card toGive) {
 		hand.add(toGive);
 	}
 	
+	@Override
 	public String toString() {
 		return this.personType.toString();
 	}
 	
-	public String printHand() {
+	/**
+	 * Returns a string representation of the players hand
+	 */
+	public String handToString() {
 		StringBuilder str = new StringBuilder();
 		for (Card c: hand) {
 			str.append(c.toString()).append("\n");
