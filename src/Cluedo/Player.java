@@ -1,6 +1,7 @@
 package Cluedo;
 
-import Cluedo.Card.*;
+import Cluedo.Card.Card;
+import Cluedo.Card.PersonCard;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,5 +36,9 @@ public class Player {
 			str.append(c.toString()).append("\n");
 		}
 		return str.toString();
+	}
+
+	public PersonCard.PersonType getPersonType(){
+		return this.personType;
 	}
 }

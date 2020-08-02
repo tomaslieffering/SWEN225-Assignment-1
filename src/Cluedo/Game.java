@@ -1,16 +1,14 @@
 package Cluedo;
 
-import Cluedo.Board.*;
-import Cluedo.Card.*;
+import Cluedo.Board.Board;
+import Cluedo.Board.BoardFormatException;
+import Cluedo.Card.Card;
+import Cluedo.Card.PersonCard;
+import Cluedo.Card.RoomCard;
+import Cluedo.Card.WeaponCard;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Scanner;
-import java.util.Set;
+import java.util.*;
 
 public class Game {
 
@@ -25,11 +23,42 @@ public class Game {
 		game.play();
 	}
 
+	/**
+	 * Deals with general playing mechanics until the game is over
+	 */
 	public void play() {
+		int roundNumber  = 1;
+		boolean ready;
+		Scanner sc = new Scanner(System.in);
 		while (!isOver) {
+			System.out.println("Round " + roundNumber + " starting!");
+			int playerNumber = 1;
 			for (Player p : players) {
+				System.out.println(board);
+				int diceNumber = 0;
+				System.out.println("Player " + playerNumber + "'s turn! (" + p.personType.toString() + ") Rolling dice...");
+				diceNumber = Turn.rollDice();
+				System.out.println("You have to take " + diceNumber + " moves. What do you want to do?");
 				// TODO Nicola to implement turn mechanic
+
+				//get input from player
+				String input = "";
+				//make sure the input is correct
+				do {
+					input = getInput(sc);
+				} while (!board.checkMove(input, diceNumber, board.findPlayer(p), p));
+
+				//if it is correct then move the player
+				board.movePlayer(p, input);
+				playerNumber++;
 			}
+			System.out.println("Round " + roundNumber + " finished! Ready for the next round?");
+			//wait for the players to be ready for the next round
+			ready = false;
+			do {
+				ready = getYesNo(sc);
+			} while (!ready);
+			roundNumber++;
 		}
 	}
 
@@ -61,13 +90,18 @@ public class Game {
 		// assign character to players randomly using Collection.shuffle
 		for (int i = 0; i < players; i++) {
 			Collections.shuffle(characters);
-			this.players.add(new Player(characters.get(0)));
+			if (!characters.get(0).toString().equals(PersonCard.PersonType.NO_PLAYER.toString())){
+				this.players.add(new Player(characters.get(0)));
+			}
+			else{
+				i--;
+			}
 			characters.remove(0);
 		}
 		// tell the players what character they are
 		int i = 1;
 		for (Player p : this.players) {
-			System.out.println("Cleudo.Player " + i + " is: " + p.toString());
+			System.out.println("Player " + i + " is: " + p.toString());
 			i++;
 		}
 		System.out.println("Ready to shuffle and deal?");
@@ -96,9 +130,14 @@ public class Game {
 			System.out.println("Oops!\n" + e.getCause());
 		}
 
+		//delete players from board not in game
+
+		board.deleteUnusedPlayers(this.players);
+
 		System.out.println("Everything is ready! Ready to start?");
 		
 		//waits for the player to say they are ready
+		ready = false;
 		do {
 			ready = getYesNo(sc);
 		} while (!ready);
@@ -164,6 +203,27 @@ public class Game {
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Gets a input from the player of where to move
+	 * @param sc the standard input scanner
+	 * @return the input string
+	 */
+	public static String getInput(Scanner sc){
+		//make sure the player has typed
+		if (sc.hasNext()){
+			String input = sc.nextLine();
+			//check whether the input is vaild
+			for (char c: input.toCharArray()){
+				if (!(c == 'u' || c == 'd' || c == 'l' || c == 'r')){
+					System.out.println("Please enter a combination of 'u' (up), 'd' (down), 'l' (left) or 'r'(right):");
+					return "";
+				}
+			}
+			return input;
+		}
+		return "";
 	}
 
 	/**
