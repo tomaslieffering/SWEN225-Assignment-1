@@ -1,5 +1,7 @@
 package Board;
 
+import Card.PersonCard;
+
 public interface BoardTile {
 
     /**
@@ -7,5 +9,11 @@ public interface BoardTile {
      *   Whether or not a player is allowed to move onto this tile
      */
     boolean canMoveHere();
+
+    String getName();
+
+    void setTile(PersonCard.PersonType personType);
+
+    boolean isPlayer();
 
 }

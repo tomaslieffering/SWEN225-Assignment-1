@@ -1,10 +1,27 @@
 package Board;
 
+import Card.PersonCard;
+
 public class WallTile implements BoardTile {
     @Override
     public boolean canMoveHere() {
         return false;
         //TODO better walls af
+    }
+
+    @Override
+    public String getName() {
+        return "WALL";
+    }
+
+    @Override
+    public void setTile(PersonCard.PersonType personType) {
+
+    }
+
+    @Override
+    public boolean isPlayer() {
+        return false;
     }
 
     @Override
