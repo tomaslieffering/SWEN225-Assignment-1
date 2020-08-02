@@ -1,16 +1,27 @@
 package Cluedo.Board;
 
-public class WallTile extends RoomTile {
+import Cluedo.Card.PersonCard;
+
+public class WallTile implements BoardTile {
     @Override
-    public boolean canMoveHere(MoveDirection direction) {
+    public boolean canMoveHere() {
         return false;
         //TODO better walls af
     }
 
     @Override
-    public boolean canMoveFromHere(MoveDirection direction) {
+    public String getName() {
+        return "WALL";
+    }
+
+    @Override
+    public void setTile(PersonCard.PersonType personType) {
+
+    }
+
+    @Override
+    public boolean isPlayer() {
         return false;
-        //TODO ^
     }
 
     @Override
