@@ -2,6 +2,8 @@ package Cluedo;
 
 import Cluedo.Board.Board;
 import Cluedo.Board.BoardFormatException;
+import Cluedo.Board.BoardTile;
+import Cluedo.Board.RoomTile;
 import Cluedo.Card.Card;
 import Cluedo.Card.PersonCard;
 import Cluedo.Card.RoomCard;
@@ -39,7 +41,6 @@ public class Game {
 				System.out.println("Player " + playerNumber + "'s turn! (" + p.personType.toString() + ") Rolling dice...");
 				diceNumber = Turn.rollDice();
 				System.out.println("You have to take " + diceNumber + " moves. What do you want to do?");
-				// TODO Nicola to implement turn mechanic
 
 				//get input from player
 				String input = "";
@@ -50,6 +51,17 @@ public class Game {
 
 				//if it is correct then move the player
 				board.movePlayer(p, input);
+
+
+				// TODO Nicola to implement turn mechanic
+				Position pos = board.findPlayer(p);
+				BoardTile tile = board.getTile(pos.getRow(), pos.getCol());
+				if (tile instanceof RoomTile){
+					RoomTile r = (RoomTile) tile;
+					Turn t = new Turn(players);
+					Suggestion suggestion = t.makeSuggestion(p,r);
+					t.disproveSuggestion(p, suggestion);
+				}
 				playerNumber++;
 			}
 			System.out.println("Round " + roundNumber + " finished! Ready for the next round?");
