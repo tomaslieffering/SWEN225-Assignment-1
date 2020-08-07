@@ -31,4 +31,8 @@ public class RoomCard implements Card {
 	public String toString() {
 		return this.roomType.toString();
 	}
+
+	public RoomCard.RoomType getType() {
+		return roomType;
+	}
 }

@@ -32,4 +32,8 @@ public class PersonCard implements Card {
 	public String toString() {
 		return this.personType.toString();
 	}
+
+	public PersonType getType() {
+		return personType;
+	}
 }

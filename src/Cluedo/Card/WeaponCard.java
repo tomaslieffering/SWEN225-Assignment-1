@@ -31,4 +31,8 @@ public class WeaponCard implements Card {
 	public String toString() {
 		return this.weaponType.toString();
 	}
+
+	public WeaponCard.WeaponType getType(){
+		return weaponType;
+	}
 }
