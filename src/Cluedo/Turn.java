@@ -100,10 +100,10 @@ public class Turn {
      */
     public Card disproveSuggestion(Player p, Suggestion suggestion){
         System.out.println("A suggestion has been made. Does anyone have evidence to the contrary?");
-        int originalPlayer = players.indexOf(p), playerNumber = players.indexOf(p), index = 0;
+        int originalPlayer = players.indexOf(p) + 1, playerNumber = players.indexOf(p), index = 0;
         boolean round = false, found = false;
         Card card = null;
-        while (!round || !found){ //until all players have been asked or card has been found
+        while (!round && !found){ //until all players have been asked or card has been found
             if (playerNumber < players.size()){
                 if (!(players.get(playerNumber).equals(p))){
                     System.out.println("Checking with player " + playerNumber + "...");
@@ -141,24 +141,24 @@ public class Turn {
                         } else if (cards.size() == 0) {
                             System.out.println("Player " + playerNumber + " cannot help.");
                         }
-
                 }
                 playerNumber++;
-                index++;
-                if (index >= players.size()){
-                    round = true;
-                }
             } else {
                 playerNumber = 0;
-                index++;
-                if (index >= players.size()){
-                    round = true;
-                }
+            }
+            index++;
+            if (index >= players.size()){
+                round = true;
             }
         }
-        System.out.println("Player " + playerNumber + " whispers to Player " + originalPlayer);
-        System.out.println("I have evidence against " + card.toString());
-        return card;
+        if (round && !found) {
+            System.out.println("No one knew enough to disprove your suggestion.");
+            return null;
+        } else {
+            System.out.println("Player " + playerNumber + " whispers to Player " + originalPlayer);
+            System.out.println("I have evidence against " + card.toString());
+            return card;
+        }
     }
 
     /**
