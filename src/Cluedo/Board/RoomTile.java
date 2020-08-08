@@ -1,92 +1,123 @@
 package Cluedo.Board;
 
-import Cluedo.Card.PersonCard;
+
+import Cluedo.Card.RoomCard;
+import Cluedo.Player;
 
 public class RoomTile implements BoardTile {
 
     /**
-     * List of all the different rooms you can have on the board
-     * Note that "HALL" is one of the rooms room and "HALLWAY" is the space between all the rooms
+     * The player standing on this tile, null if there is not player here
      */
-    public enum RoomType{
-        KITCHEN, BALL_ROOM, CONSERVATORY, DINING_ROOM, BILLIARD_ROOM, LIBRARY, LOUNGE, HALL, STUDY, BASEMENT, HALLWAY
-    }
+    protected Player player = null;
 
     /**
      * The room that this tile is part of
+     * The value null is used for Hallway
      */
-    private RoomType room;
+    protected RoomCard.RoomType room;
 
-    private PersonCard.PersonType playerOnTile = null;
+    //=======================================================
+    //  Constructors
+    //=======================================================
+
     /**
      * Default constructor
-     * Field "room" is set to "HALLWAY"
+     * Field "room" is set to null
      */
     public RoomTile(){
-        this.playerOnTile = PersonCard.PersonType.NO_PLAYER;
-        this.room = RoomType.HALLWAY;
+        this(null);
     }
 
     /**
      * @param room
      *   The room for this tile to be set to
      */
-    public RoomTile(RoomType room){
-        this.playerOnTile = PersonCard.PersonType.NO_PLAYER;
+    public RoomTile(RoomCard.RoomType room){
         this.room = room;
     }
 
-    public RoomTile(PersonCard.PersonType personOnTile){
-        this.playerOnTile = personOnTile;
-        this.room = RoomType.HALLWAY;
+
+    //=======================================================
+    //  METHODS
+    //=======================================================
+
+    @Override
+    public boolean canMoveHere(MoveDirection direction) {
+        return player == null;
     }
 
     @Override
-    public boolean canMoveHere() {
+    public boolean canMoveFromHere(MoveDirection direction) {
         return true;
-        //TODO return false if there is already a player on this tile
     }
 
-    public void setTile(PersonCard.PersonType personType){
-        this.playerOnTile = personType;
+    /**
+     * Returns the room of this tile
+     */
+    public RoomCard.RoomType getRoom() {
+        return room;
     }
 
-    public boolean isPlayer(){
-        if (playerOnTile == PersonCard.PersonType.NO_PLAYER){
-            return false;
-        }
-        return true;
+    /**
+     * Sets the player on this tile
+     */
+    public void setPlayer(Player p) {
+        player = p;
+    }
+
+    /**
+     * Returns the player on this tile
+     */
+    public Player getPlayer() {
+        return player;
     }
 
     @Override
-    public String getName() {
-        return playerOnTile.toString();
-    }
-
     public String toString() {
-        if (isPlayer()){
-            if (playerOnTile == PersonCard.PersonType.MISS_SCARLETT){
-                return "\uD83C\uDD42" + " ";
-            }
-            if (playerOnTile == PersonCard.PersonType.COLONEL_MUSTARD){
-                return "\uD83C\uDD3C" + " ";
-            }
-            if (playerOnTile == PersonCard.PersonType.MRS_WHITE){
-                return "\uD83C\uDD46" + " ";
-            }
-            if (playerOnTile == PersonCard.PersonType.MR_GREEN){
-                return "\uD83C\uDD36" + " ";
-            }
-            if (playerOnTile == PersonCard.PersonType.MRS_PEACOCK){
-                return "\uD83D\uDC26" + " ";
-            }
-            if (playerOnTile == PersonCard.PersonType.PROFESSOR_PLUM){
-                return "\uD83C\uDD3F" + " ";
-            }
-        }
-        if(room == RoomType.HALLWAY)
-            return "\u2591\u2591";
+        if(player != null)
+            return "*P ";
+        if(room == null)
+            return "\u2591\u2591 ";
         else
-            return "\u2592\u2592";
+            return "\u2592\u2592 ";
+    }
+
+    //=======================================================
+    //  STATIC METHODS
+    //=======================================================
+
+    /**
+     * Moves a player from one tile to another
+     * @param from
+     *   The tile the player is moving from
+     * @param to
+     *   The tile the player is moving to
+     */
+    public static void movePlayer(RoomTile from, RoomTile to) {
+        to.player = from.player;
+        from.player = null;
+    }
+
+    /**
+     * Flips the direction given
+     * @param direction
+     *   Input direction
+     * @return
+     *   The direction moving in the opposite direction
+     */
+    public static MoveDirection flipDirection(MoveDirection direction) {
+        switch (direction) {
+            case LEFT:
+                return MoveDirection.RIGHT;
+            case RIGHT:
+                return MoveDirection.LEFT;
+            case UP:
+                return MoveDirection.DOWN;
+            case DOWN:
+                return MoveDirection.UP;
+            default:
+                throw new IllegalStateException("Not a direction");
+        }
     }
 }
