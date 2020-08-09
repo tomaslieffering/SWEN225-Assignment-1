@@ -49,8 +49,6 @@ public class Game {
 					input = getInput(sc);
 				} while (!board.movePlayer(input, diceNumber, p));
 
-				// TODO Nicola to implement turn mechanic
-
 					RoomCard.RoomType r = board.getPlayerRoom(p);
 					Turn t = new Turn(players);
 					if (r != null) {
@@ -59,7 +57,16 @@ public class Game {
 						boolean suggest = getYesNo(sc);
 						if (suggest) {
 							Suggestion suggestion = t.makeSuggestion(p, r);
-							t.disproveSuggestion(p, suggestion);
+							Card proven = t.disproveSuggestion(p, suggestion);
+							//TODO Sayumi to save 'disproven' card for the player if not null
+							if (proven != null){
+								System.out.println("Would you now like to make an accusation? This is will be your final guess");
+								boolean accuse = getYesNo(sc);
+								if (accuse) {
+									//TODO Sayumi to adapt suggestion for accusation (add a boolean value for whether is suggest or accuse, if accuse then room does not matter)
+									//TODO Nicola to take assumption and end/win game for player
+								}
+							}
 						}
 					}
 				}
