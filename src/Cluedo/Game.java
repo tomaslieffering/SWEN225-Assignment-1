@@ -47,20 +47,21 @@ public class Game {
 				//make sure the input is correct
 				do {
 					input = getInput(sc);
-				} while (!board.checkMove(input, diceNumber, board.findPlayer(p), p));
-
-				//if it is correct then move the player
-				board.movePlayer(p, input);
-
+				} while (!board.movePlayer(input, diceNumber, p));
 
 				// TODO Nicola to implement turn mechanic
-				Position pos = board.findPlayer(p);
-				BoardTile tile = board.getTile(pos.getRow(), pos.getCol());
-				if (tile instanceof RoomTile){
-					RoomTile r = (RoomTile) tile;
+
+					RoomCard.RoomType r = board.getPlayerRoom(p);
 					Turn t = new Turn(players);
-					Suggestion suggestion = t.makeSuggestion(p,r);
-					t.disproveSuggestion(p, suggestion);
+					if (r != null) {
+						System.out.println("You have entered the " + r.toString());
+						System.out.println("Would you like to make a suggestion?");
+						boolean suggest = getYesNo(sc);
+						if (suggest) {
+							Suggestion suggestion = t.makeSuggestion(p, r);
+							t.disproveSuggestion(p, suggestion);
+						}
+					}
 				}
 				playerNumber++;
 			}
@@ -72,7 +73,7 @@ public class Game {
 			} while (!ready);
 			roundNumber++;
 		}
-	}
+
 
 	/**
 	 * This method initializes the state of the game, creating players, their hands,
@@ -137,14 +138,14 @@ public class Game {
 
 		//create the board
 		try {
-			board = new Board(new File("board-layout.dat"));
+			board = new Board(new File("board-layout.dat"), this.players);
 		} catch (BoardFormatException e) {
 			System.out.println("Oops!\n" + e.getCause());
 		}
 
 		//delete players from board not in game
 
-		board.deleteUnusedPlayers(this.players);
+		//board.deleteUnusedPlayers(this.players);
 
 		System.out.println("Everything is ready! Ready to start?");
 		
