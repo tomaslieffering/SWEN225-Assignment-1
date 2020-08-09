@@ -38,17 +38,16 @@ public class Game {
 			for (Player p : players) {
 				System.out.println(board);
 				int diceNumber = 0;
-				if (!p.hasLost) {
-					System.out.println("Player " + playerNumber + "'s turn! (" + p.personType.toString() + ") Rolling dice...");
-					diceNumber = Turn.rollDice();
-					System.out.println("You have to take " + diceNumber + " moves. What do you want to do?");
+				System.out.println("Player " + playerNumber + "'s turn! (" + p.personType.toString() + ") Rolling dice...");
+				diceNumber = Turn.rollDice();
+				System.out.println("You have to take " + diceNumber + " moves. What do you want to do?");
 
-					//get input from player
-					String input = "";
-					//make sure the input is correct
-					do {
-						input = getInput(sc);
-					} while (!board.movePlayer(input, diceNumber, p));
+				//get input from player
+				String input = "";
+				//make sure the input is correct
+				do {
+					input = getInput(sc);
+				} while (!board.movePlayer(input, diceNumber, p));
 
 					RoomCard.RoomType r = board.getPlayerRoom(p);
 					Turn t = new Turn(players);
@@ -57,21 +56,19 @@ public class Game {
 						System.out.println("Would you like to make a suggestion?");
 						boolean suggest = getYesNo(sc);
 						if (suggest) {
-							Suggestion suggestion = t.makeSuggestion(p, r);
-							System.out.println(suggestion.person + " " + suggestion.room + " " + suggestion.weapon);
+							Suggestion suggestion = t.makeSuggestion(p, r, false);
 							Card proven = t.disproveSuggestion(p, suggestion);
-							//TODO Sayumi to save 'disproven' card for the player if not null
 							if (proven != null) {
 								System.out.println("Would you now like to make an accusation? This is will be your final guess");
 								boolean accuse = getYesNo(sc);
 								if (accuse) {
-									//TODO Sayumi to adapt suggestion for accusation (add a boolean value for whether is suggest or accuse, if accuse then room does not matter)
-									//TODO Nicola to take assumption and end/win game for player
-									boolean win = t.accusationCheck(p, suggestion, envelope);
+									Suggestion accusation = t.makeSuggestion(p, r, true);
+									boolean win = t.accusationCheck(p, accusation, envelope);
 									if (win) {
 										System.out.println("Player " + playerNumber + " has solved the murder, and wins the game!");
 										isOver = true;
 									} else {
+										System.out.println("Player " + playerNumber + " has guessed incorrectly. They are now out of the game.");
 										p.hasLost = true;
 									}
 								}
@@ -79,9 +76,8 @@ public class Game {
 						}
 					}
 				}
+				playerNumber++;
 			}
-			playerNumber++;
-		}
 			System.out.println("Round " + roundNumber + " finished! Ready for the next round?");
 			//wait for the players to be ready for the next round
 			ready = false;
