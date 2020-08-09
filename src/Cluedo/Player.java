@@ -9,6 +9,7 @@ import java.util.List;
 public class Player {
 	PersonCard.PersonType personType;
 	List<Card> hand = new ArrayList<>();
+	boolean hasLost = false; //determines if character has made wrong accusation or is still in game
 	
 	public Player(PersonCard.PersonType personType) {
 		this.personType = personType;

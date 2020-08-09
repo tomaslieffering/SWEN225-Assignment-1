@@ -74,18 +74,18 @@ public class Turn {
                     person = suggestperson(sc);
                 } while (person == -1);
                 PersonCard.PersonType personCard = null;
-                switch (person){
-                    case 1:
+                switch (Integer.toString(person)){
+                    case "1":
                         personCard = PersonCard.PersonType.MISS_SCARLETT;
-                    case 2:
+                    case "2":
                         personCard = PersonCard.PersonType.COLONEL_MUSTARD;
-                    case 3:
+                    case "3":
                         personCard = PersonCard.PersonType.MRS_WHITE;
-                    case 4:
+                    case "4":
                         personCard = PersonCard.PersonType.MR_GREEN;
-                    case 5:
+                    case "5":
                         personCard = PersonCard.PersonType.MRS_PEACOCK;
-                    case 6:
+                    case "6":
                         personCard = PersonCard.PersonType.PROFESSOR_PLUM;
         }
                 System.out.println("KITCHEN        : 1 \n"+
@@ -248,7 +248,6 @@ public class Turn {
                         } else if (cards.size() == 0) {
                             System.out.println("Player " + playerNumber + " cannot help.");
                         }
-
                 }
                 playerNumber++;
                 index++;
@@ -266,6 +265,31 @@ public class Turn {
         System.out.println("Player " + playerNumber + " whispers to Player " + originalPlayer);
         System.out.println("I have evidence against " + card.toString());
         return card;
+    }
+
+    /**
+     * After an accusation has been made, check if the player wins or loses the game
+     * @param p
+     * @param suggestion
+     * @param envelope
+     * @return
+     */
+    public boolean accusationCheck(Player p, Suggestion suggestion, Set<Card> envelope){
+        int found = 0;
+        for (Card c : envelope){
+            if (c.toString().equals(suggestion.person.toString())){
+                found++;
+            } else if (c.toString().equals(suggestion.room.toString())){
+                found++;
+            } else if (c.toString().equals(suggestion.weapon.toString())){
+                found++;
+            }
+        }
+        if (found == 3){
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
