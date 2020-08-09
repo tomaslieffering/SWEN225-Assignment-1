@@ -4,13 +4,29 @@ import Cluedo.Card.PersonCard;
 import Cluedo.Card.RoomCard;
 import Cluedo.Player;
 import Cluedo.Position;
-import org.omg.Messaging.SYNC_WITH_TRANSPORT;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
 public class Board {
+
+    //=======================================================
+    //  Fields
+    //=======================================================
+
+    /**
+     * These are the chars used for each segment to draw
+     */
+    public static char fullWall = '\u2588';
+    public static char leftWall = '\u258c';
+    public static char rightWall = '\u2590';
+    public static char upWall = '\u2580';
+    public static char downWall = '\u2584';
+    public static char roomFloor = '\u2592';
+    public static char hallwayFloor = '\u2591';
+    public static String combiningString = "\u0347\u033f";
+
 
     /**
      * Array containing all of the tiles on the board
@@ -154,6 +170,33 @@ public class Board {
      */
     public RoomCard.RoomType getPlayerRoom(Player p) {
         return ((RoomTile)getTileAt(findPlayer(p))).getRoom();
+    }
+
+    /**
+     * Sets how the board should be output
+     * @param i
+     *   0 for Unicode, 1 for ASCII
+     */
+    public static void setPrintMode(int i) {
+        if(i == 0) {
+            fullWall = '\u2588';
+            leftWall = '\u258c';
+            rightWall = '\u2590';
+            upWall = '\u2580';
+            downWall = '\u2584';
+            roomFloor = '\u2592';
+            hallwayFloor = '\u2591';
+            combiningString = "\u0347\u033f";
+        } else if(i == 1) {
+            fullWall = '#';
+            leftWall = '|';
+            rightWall = '|';
+            upWall = '"';
+            downWall = '_';
+            roomFloor = ':';
+            hallwayFloor = '.';
+            combiningString = "";
+        }
     }
 
     @SuppressWarnings("ForLoopReplaceableByForEach")
@@ -383,14 +426,15 @@ public class Board {
         ArrayList<Player> al = new ArrayList<>();
         al.add(new Player(PersonCard.PersonType.COLONEL_MUSTARD));
         al.add(new Player(PersonCard.PersonType.MISS_SCARLETT));
-        al.add(new Player(PersonCard.PersonType.MRS_WHITE));
+        //al.add(new Player(PersonCard.PersonType.MRS_WHITE));
         al.add(new Player(PersonCard.PersonType.MR_GREEN));
         al.add(new Player(PersonCard.PersonType.MRS_PEACOCK));
         al.add(new Player(PersonCard.PersonType.PROFESSOR_PLUM));
         Board b = new Board(new File("board-layout.dat"), al);
         Player player = new Player(PersonCard.PersonType.COLONEL_MUSTARD);
-        //((RoomTile)b.board[0][9]).setPlayer(player);
-        //b.movePlayer("dllfg", 100, player);
+        ((RoomTile)b.board[1][9]).setPlayer(player);
+        b.movePlayer("u", 3, player);
+        setPrintMode(1);
         System.out.println(b);
     }
 }

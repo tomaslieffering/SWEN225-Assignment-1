@@ -76,11 +76,11 @@ public class RoomTile implements BoardTile {
     @Override
     public String toString() {
         if(player != null)
-            return "*P ";
+            return "*" + player.toChar() + " ";
         if(room == null)
-            return "\u2591\u2591 ";
+            return Board.hallwayFloor + "" + Board.hallwayFloor + " ";
         else
-            return "\u2592\u2592 ";
+            return Board.roomFloor + "" + Board.roomFloor + " ";
     }
 
     //=======================================================

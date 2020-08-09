@@ -1,6 +1,7 @@
 package Cluedo.Board;
 
 import Cluedo.Card.RoomCard;
+import Cluedo.Player;
 
 public class WallTile extends RoomTile {
 
@@ -83,36 +84,43 @@ public class WallTile extends RoomTile {
 
     @Override
     public String toString() {
-        switch (faces) {
-            case 1:
-                // left
-                if(room == null)
-                    return "\u258c\u2591 ";
-                return "\u258c\u2592 ";
-            case 2:
-                // right
-                if(room == null)
-                    return "\u2591\u2590 ";
-                return "\u2592\u2590 ";
-            case 4:
-                // up
-                return "\u2580\u2580 ";
-            case 5:
-                // left + up
-                return "\u258c\u2580 ";
-            case 6:
-                // right + up
-                return "\u2580\u2590 ";
-            case 8:
-                // down
-                return "\u2584\u2584 ";
-            case 9:
-                // left + down
-                return "\u258c\u2584 ";
-            case 10:
-                // right + down
-                return "\u2584\u2590 ";
+        StringBuilder str = new StringBuilder();
+        if(hasFace(MoveDirection.LEFT)) {
+            //left
+            str.append(Board.leftWall);
+            contentString(str);
+            str.append(" ");
+        } else if(hasFace(MoveDirection.RIGHT)) {
+            //right
+            contentString(str);
+            str.append(Board.rightWall).append(" ");
+        } else {
+            if(hasFace(MoveDirection.UP))
+                str.append(Board.upWall);
+            else if(hasFace(MoveDirection.DOWN))
+                str.append(Board.downWall);
+            contentString(str);
+            str.append(" ");
         }
-        return "\u2588\u2588 ";
+        return str.toString();
+    }
+
+    /**
+     * Utility method for toString()
+     * Appends the contents of this tile as a string
+     */
+    public void contentString(StringBuilder str) {
+        if(player != null) {
+            str.append(player.toChar());
+        } else {
+            if(hasFace(MoveDirection.UP))
+                str.append(Board.upWall);
+            else if(hasFace(MoveDirection.DOWN))
+                str.append(Board.downWall);
+            else if(room == null)
+                str.append(Board.hallwayFloor);
+            else
+                str.append(Board.roomFloor);
+        }
     }
 }

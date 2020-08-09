@@ -6,7 +6,8 @@ public interface BoardTile {
         LEFT, RIGHT, UP, DOWN
     }
 
-    /**Checks whether a player can move onto this tile in the given direction
+    /**
+     * Checks whether a player can move onto this tile in the given direction
      * @param direction
      *   The direction the player is moving onto this tile
      * @return
@@ -14,7 +15,8 @@ public interface BoardTile {
      */
     boolean canMoveHere(MoveDirection direction);
 
-    /**Checks whether a player can move from this tile in the given direction
+    /**
+     * Checks whether a player can move from this tile in the given direction
      * @param direction
      *   The direction the player is moving onto this tile
      * @return

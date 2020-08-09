@@ -55,7 +55,7 @@ public class VoidTile implements BoardTile {
     public String toString() {
         if(label != null)
             return label + " ";
-        return "\u2588\u2588 ";
+        return Board.fullWall + "" + Board.fullWall + " ";
     }
 
     //=======================================================
@@ -65,23 +65,23 @@ public class VoidTile implements BoardTile {
     private static String generateLabel(RoomCard.RoomType roomType) throws BoardFormatException {
         switch(roomType) {
             case KITCHEN:
-                return "K\u0347\u033fI\u0347\u033f";
+                return "KI";
             case BALL_ROOM:
-                return "B\u0347\u033fA\u0347\u033f";
+                return "BA";
             case CONSERVATORY:
-                return "C\u0347\u033fV\u0347\u033f";
+                return "CV";
             case DINING_ROOM:
-                return "D\u0347\u033fI\u0347\u033f";
+                return "DI";
             case BILLIARD_ROOM:
-                return "B\u0347\u033fI\u0347\u033f";
+                return "BI";
             case LIBRARY:
-                return "L\u0347\u033fB\u0347\u033f";
+                return "LB";
             case LOUNGE:
-                return "L\u0347\u033fG\u0347\u033f";
+                return "LG";
             case HALL:
-                return "H\u0347\u033fA\u0347\u033f";
+                return "HA";
             case STUDY:
-                return "S\u0347\u033fT\u0347\u033f";
+                return "ST";
             default:
                 throw new BoardFormatException("Exception during board parsing.\n\"Invalid room\"");
         }
