@@ -199,6 +199,28 @@ public class Board {
         }
     }
 
+    /**
+     * Moves one player to another in a room
+     * @param first
+     *   The player to be moved to
+     * @param second
+     *   The player to be moved
+     */
+    public void movePlayerToPlayer(Player first, Player second) {
+        Position firstPos = findPlayer(first);
+        RoomCard.RoomType room = ((RoomTile)getTileAt(firstPos)).getRoom();
+        Position secondPos;
+        // attempt 1
+        for(BoardTile.MoveDirection d : BoardTile.MoveDirection.values()) {
+            secondPos = firstPos.move(d);
+            BoardTile tile = getTileAt(secondPos);
+            if((tile instanceof RoomTile) && ((RoomTile) tile).getRoom() == room && tile.canMoveHere(d)) {
+                RoomTile.movePlayer((RoomTile) getTileAt(findPlayer(second)), (RoomTile) getTileAt(secondPos));
+                break;
+            }
+        }
+    }
+
     @SuppressWarnings("ForLoopReplaceableByForEach")
     @Override
     public String toString() {
