@@ -60,37 +60,157 @@ public class Turn {
         }
     }
 
-
-    //TODO: for testing, remove
-    public static void main(String[] args){
-        int players = 3;
-        List<Player> subPlayers = new ArrayList<Player>();
-        // get the list of all possible players
-        List<PersonCard.PersonType> characters = new ArrayList<>(Arrays.asList(PersonCard.PersonType.values()));
-
-        // assign character to players randomly using Collection.shuffle
-        for (int i = 0; i < players; i++) {
-            Collections.shuffle(characters);
-            if (!characters.get(0).toString().equals(PersonCard.PersonType.NO_PLAYER.toString())){
-                subPlayers.add(new Player(characters.get(0)));
-            }
-            else{
-                i--;
-            }
-            characters.remove(0);
+    public Suggestion makeSuggestion(Player p, RoomCard.RoomType r){
+        Scanner sc = new Scanner(System.in);
+                System.out.println("MISS_SCARLETT   : 1 \n"+
+                        "COLONEL_MUSTARD : 2\n"+
+                        "MRS_WHITE       : 3\n"+
+                        "MR_GREEN        : 4\n"+
+                        "MRS_PEACOCK     : 5\n"+
+                        "PROFESSOR_PLUM  : 6\n");
+                System.out.println("Enter the number for your suggestion of the character");
+                int person;
+                do {
+                    person = suggestperson(sc);
+                } while (person == -1);
+                PersonCard.PersonType personCard = null;
+                switch (person){
+                    case 1:
+                        personCard = PersonCard.PersonType.MISS_SCARLETT;
+                    case 2:
+                        personCard = PersonCard.PersonType.COLONEL_MUSTARD;
+                    case 3:
+                        personCard = PersonCard.PersonType.MRS_WHITE;
+                    case 4:
+                        personCard = PersonCard.PersonType.MR_GREEN;
+                    case 5:
+                        personCard = PersonCard.PersonType.MRS_PEACOCK;
+                    case 6:
+                        personCard = PersonCard.PersonType.PROFESSOR_PLUM;
         }
-
-        Turn t = new Turn(subPlayers);
-        Player p = t.players.get(0);
-        RoomTile r = new RoomTile(RoomTile.RoomType.BALL_ROOM);
-        Suggestion sug = t.makeSuggestion(p,r);
-        Card c = t.disproveSuggestion(p, sug);
+                System.out.println("KITCHEN        : 1 \n"+
+                        "BALL_ROOM      : 2 \n"+
+                        "CONSERVATORY   : 3 \n"+
+                        "BILLIARD_ROOM  : 4 \n"+
+                        "DINING_ROOM    : 5 \n"+
+                        "LIBRARY        : 6 \n"+
+                        "LOUNGE         : 7 \n"+
+                        "HALL           : 8 \n"+
+                        "STUDY          : 9 \n");
+                System.out.println("Enter the number for your suggestion of the room");
+                RoomCard.RoomType roomCard = null;
+                int room;
+                do {
+                    room = suggestroom(sc);
+                } while (room == -1);
+                switch (room){
+                    case 1:
+                        roomCard = RoomCard.RoomType.KITCHEN;
+                    case 2:
+                        roomCard = RoomCard.RoomType.BALL_ROOM;
+                    case 3:
+                        roomCard = RoomCard.RoomType.CONSERVATORY;
+                    case 4:
+                        roomCard = RoomCard.RoomType.BILLIARD_ROOM;
+                    case 5:
+                        roomCard = RoomCard.RoomType.DINING_ROOM;
+                    case 6:
+                        roomCard = RoomCard.RoomType.LIBRARY;
+                    case 7:
+                        roomCard = RoomCard.RoomType.LOUNGE;
+                    case 8:
+                        roomCard = RoomCard.RoomType.HALL;
+                    case 9:
+                        roomCard = RoomCard.RoomType.STUDY;
+                }
+                System.out.println("CANDLESTICK : 1 \n"+
+                        "DAGGER      : 2 \n"+
+                        "LEAD_PIPE   : 3 \n"+
+                        "REVOLVER    : 4 \n"+
+                        "ROPE        : 5 \n"+
+                        "SPANNER     : 6 \n");
+                System.out.println("Enter the number for your suggestion of the tool");
+                int tool;
+                do {
+                    tool = suggesttool(sc);
+                } while (tool == -1);
+                WeaponCard.WeaponType weaponCard = null;
+                switch(tool){
+                    case 1:
+                        weaponCard = WeaponCard.WeaponType.CANDLESTICK;
+                    case 2:
+                        weaponCard = WeaponCard.WeaponType.DAGGER;
+                    case 3:
+                        weaponCard = WeaponCard.WeaponType.LEAD_PIPE;
+                    case 4:
+                        weaponCard = WeaponCard.WeaponType.REVOLVER;
+                    case 5:
+                        weaponCard = WeaponCard.WeaponType.ROPE;
+                    case 6:
+                        weaponCard = WeaponCard.WeaponType.SPANNER;
+                }
+                Suggestion suggestion = new Suggestion(personCard, roomCard, weaponCard);
+                return suggestion;
     }
 
-    //TODO - replace dummy class when made
-    public Suggestion makeSuggestion(Player p, RoomTile r){
-        Suggestion suggestion = new Suggestion(PersonCard.PersonType.PROFESSOR_PLUM, RoomCard.RoomType.BALL_ROOM, WeaponCard.WeaponType.CANDLESTICK);
-        return suggestion;
+            private int suggestperson(Scanner sc) {
+                if (sc.hasNext()) {
+                    try {
+                        int person = Integer.parseInt(sc.nextLine());
+                        if (person < 1 || person > 6) {
+                            System.out.println("Please enter a number between 1 and 6:");
+                            return -1;
+                        }
+                        else {
+                            return person;
+                        }
+                    }
+                    catch (Exception e) {
+                        System.out.println("Please enter a integer number:");
+                        return -1;
+                    }
+                }
+                return 0;
+            }
+
+            private int suggestroom(Scanner sc) {
+                if (sc.hasNext()) {
+                    try {
+                        int room = Integer.parseInt(sc.nextLine());
+                        if (room < 1 || room > 9) {
+                            System.out.println("Please enter a number between 1 and 9:");
+                            return -1;
+                        }
+                        else {
+                            return room;
+                        }
+                    }
+                    catch (Exception e) {
+                        System.out.println("Please enter a integer number:");
+                        return -1;
+                    }
+                }
+                return 0;
+            }
+
+            private int suggesttool(Scanner sc) {
+                if (sc.hasNext()) {
+                    try {
+                        int tool = Integer.parseInt(sc.nextLine());
+                        if (tool < 1 || tool > 6) {
+                            System.out.println("Please enter a number between 1 and 6:");
+                            return -1;
+                        }
+                        else {
+                            return tool;
+                        }
+                    }
+                    catch (Exception e) {
+                        System.out.println("Please enter a integer number:");
+                        return -1;
+                    }
+                }
+                return 0;
     }
 
     /**
@@ -109,29 +229,16 @@ public class Turn {
                     System.out.println("Checking with player " + playerNumber + "...");
                     Player next = players.get(playerNumber);
                     ArrayList<Card> cards = new ArrayList<Card>();
-                    if (next.hand.contains(suggestion.person)){
-                        Set<PersonCard> cardSet = (Set<PersonCard>)PersonCard.getAllCards();
-                        for (PersonCard c : cardSet){
-                            if (c.getType().equals(suggestion.person)){
-                                cards.add(c);
-                            }
-                        }
-                    } else if (next.hand.contains(suggestion.room)){
-                        Set<RoomCard> cardSet = (Set<RoomCard>)RoomCard.getAllCards();
-                        for (RoomCard c : cardSet){
-                            if (c.getType().equals(suggestion.person)){
-                                cards.add(c);
-                            }
-                        }
-                    } else if (next.hand.contains(suggestion.weapon)){
-                        Set<WeaponCard> cardSet = (Set<WeaponCard>)WeaponCard.getAllCards();
-                        for (WeaponCard c : cardSet){
-                            if (c.getType().equals(suggestion.person)){
-                                cards.add(c);
-                            }
+                    List<Card> plHand = next.hand;
+                    for (Card c : plHand){
+                        if (c.toString().equals(suggestion.person.toString())){
+                            cards.add(c);
+                        } else if (c.toString().equals(suggestion.room.toString())){
+                            cards.add(c);
+                        } else if (c.toString().equals(suggestion.weapon.toString())){
+                            cards.add(c);
                         }
                     }
-
                         if (cards.size() == 1) {
                             found = true;
                             card = cards.get(0);

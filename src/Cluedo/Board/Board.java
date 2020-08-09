@@ -1,21 +1,41 @@
 package Cluedo.Board;
 
 import Cluedo.Card.PersonCard;
+import Cluedo.Card.RoomCard;
 import Cluedo.Player;
 import Cluedo.Position;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 public class Board {
+
+    //=======================================================
+    //  Fields
+    //=======================================================
+
+    /**
+     * These are the chars used for each segment to draw
+     */
+    public static char fullWall = '\u2588';
+    public static char leftWall = '\u258c';
+    public static char rightWall = '\u2590';
+    public static char upWall = '\u2580';
+    public static char downWall = '\u2584';
+    public static char roomFloor = '\u2592';
+    public static char hallwayFloor = '\u2591';
+    public static String combiningString = "\u0347\u033f";
+
 
     /**
      * Array containing all of the tiles on the board
      */
     private final BoardTile[][] board;
+
+    //=======================================================
+    //  Constructors
+    //=======================================================
 
     /**
      * Constructs a new board with the given layout
@@ -24,22 +44,28 @@ public class Board {
      * @throws BoardFormatException
      *   Thrown if the is an IO exception or if the file does not describe a valid board
      */
-    public Board(File boardLayout) throws BoardFormatException{
+    public Board(File boardLayout, List<Player> players) throws BoardFormatException{
         try{
             Scanner scan = new Scanner(boardLayout);
             String currentRow = scan.nextLine();
-            int rowLength = currentRow.length() - 1;
-            int rowNumber = 0;
+            String playerRow = null;
 
             // scanning everything into list
-            List<BoardTile> tileList = new ArrayList<>(Board.parseRow(currentRow, rowNumber));
+            List<BoardTile> tileList = new ArrayList<>(Board.parseRow(currentRow));
+            int rowLength = tileList.size();
             while(scan.hasNext()) {
                 currentRow = scan.nextLine();
-                rowNumber++;
-                if(rowLength + 1 != currentRow.length())
+                // get player row
+                if(currentRow.startsWith("+")) {
+                    playerRow = currentRow.substring(1);
+                    break;
+                }
+                tileList.addAll(Board.parseRow(currentRow));
+                if(tileList.size() % rowLength != 0)
                     throw new BoardFormatException("Exception during board parsing.\n\"Row Length mismatched\"");
-                tileList.addAll(Board.parseRow(currentRow, rowNumber));
             }
+            if(playerRow == null)
+                throw new BoardFormatException("Exception during board parsing.\n\"Player positions not specified\"");
 
             // compiling into array
             BoardTile[][] boardTiles = new BoardTile[tileList.size() / rowLength][rowLength];
@@ -50,123 +76,130 @@ public class Board {
             }
             board = boardTiles;
 
+            // adding players
+            parsePlayerRow(playerRow, players);
         } catch (IOException e) {
             throw new BoardFormatException("Exception during board data file handling.");
         }
     }
 
+    //=======================================================
+    //  Methods
+    //=======================================================
+
     /**
-     * Will parse a string into a list of board tiles
+     * Checks whether a specific input is valid, and then moves the player
+     * @param p
+     *   The player to be moved
+     * @param input
+     *   The input string to move the player
+     * @param diceNumber
+     *   The number the player rolled on the dice
+     * @return
+     *   True if the move is valid, false if not
+     *   Move is not done if it is invalid
      */
-    private static List<BoardTile> parseRow(String row, int rowNumber) throws BoardFormatException{
-        if(!row.endsWith("/"))
-            throw new BoardFormatException("Exception during board parsing.\n\"No '/' at end of row\"");
-        row = row.substring(0, row.length() - 1);
-        List<BoardTile> tiles = new ArrayList<>();
-        int colNumber = 0;
-        for(char c : row.toCharArray()) {
-            switch (c) {
-                case '&':
-                    tiles.add(new WallTile());
-                    break;
-                case 'K':
-                    tiles.add(new RoomTile(RoomTile.RoomType.KITCHEN));
-                    break;
-                case 'B':
-                    tiles.add(new RoomTile(RoomTile.RoomType.BALL_ROOM));
-                    break;
-                case 'C':
-                    tiles.add(new RoomTile(RoomTile.RoomType.CONSERVATORY));
-                    break;
-                case 'D':
-                    tiles.add(new RoomTile(RoomTile.RoomType.DINING_ROOM));
-                    break;
-                case 'b':
-                    tiles.add(new RoomTile(RoomTile.RoomType.BILLIARD_ROOM));
-                    break;
-                case 'L':
-                    tiles.add(new RoomTile(RoomTile.RoomType.LIBRARY));
-                    break;
-                case 'l':
-                    tiles.add(new RoomTile(RoomTile.RoomType.LOUNGE));
-                    break;
-                case 'H':
-                    tiles.add(new RoomTile(RoomTile.RoomType.HALL));
-                    break;
-                case 'S':
-                    tiles.add(new RoomTile(RoomTile.RoomType.STUDY));
-                    break;
-                case ' ':
-                    tiles.add(new RoomTile(RoomTile.RoomType.HALLWAY));
-                    break;
-                case 'W':
-                    tiles.add(new RoomTile(PersonCard.PersonType.MRS_WHITE));
-                    break;
-                case 'G':
-                    tiles.add(new RoomTile(PersonCard.PersonType.MR_GREEN));
-                    break;
-                case 'P':
-                    tiles.add(new RoomTile(PersonCard.PersonType.MRS_PEACOCK));
-                    break;
-                case 'p':
-                    tiles.add(new RoomTile(PersonCard.PersonType.PROFESSOR_PLUM));
-                    break;
-                case 's':
-                    tiles.add(new RoomTile(PersonCard.PersonType.MISS_SCARLETT));
-                    break;
-                case 'M':
-                    tiles.add(new RoomTile(PersonCard.PersonType.COLONEL_MUSTARD));
-                    break;
-                default:
-                    throw new BoardFormatException("Exception during board parsing.\n\"Unrecognized character '" + c + "'\"");
+    public boolean movePlayer(String input, int diceNumber, Player p) {
+        Position start = findPlayer(p);
+        int moveCount = 0;
+        Set<BoardTile> previousTiles = new HashSet<>();
+        Position currentPosition = start;
+        RoomCard.RoomType startRoom = ((RoomTile)getTileAt(start)).getRoom();
+        while(input.length() > 0) {
+            char c = input.charAt(0);
+            input = input.substring(1);
+            BoardTile.MoveDirection direction = parseDirection(c);
+            //if the input char is wrong
+            if (direction == null) {
+                System.out.println("'" + c + "' is not a valid direction!");
+                return false;
             }
-            colNumber++;
+
+            //if the location is out of bounds
+            if(isOutOfBounds(currentPosition.move(direction))) {
+                System.out.println("You can't move off the board!");
+                return false;
+            }
+
+            //if the tile cannot be moved to
+            if(!getTileAt(currentPosition).canMoveFromHere(direction) ||
+                    !getTileAt(currentPosition.move(direction)).canMoveHere(direction)) {
+                System.out.println("You can't move through walls!");
+                return false;
+            }
+
+            //if the tile has already been moved to
+            if(previousTiles.contains(getTileAt(currentPosition.move(direction)))) {
+                System.out.println("You can't retrace your own steps!");
+                return false;
+            }
+
+            //update position
+            previousTiles.add(getTileAt(currentPosition));
+            currentPosition = currentPosition.move(direction);
+            moveCount++;
         }
-        return tiles;
+        if(moveCount > diceNumber) {
+            System.out.println("You can't use more moves than your roll!");
+            return false;
+        }
+        else if(moveCount < diceNumber) {
+            if(((RoomTile)getTileAt(currentPosition)).getRoom() == startRoom ||
+                    ((RoomTile)getTileAt(currentPosition)).getRoom() == null) {
+                System.out.println("You must use all of your moves if you haven't entered a new room!");
+                return false;
+            }
+        }
+        RoomTile.movePlayer((RoomTile)getTileAt(start), (RoomTile)getTileAt(currentPosition));
+        return true;
     }
 
     /**
-     * delete the player tiles from the board if there are less than six players
-     * @param players the list of active players
+     * Returns the tile at the given position
+     * @param position
+     *   Position describing the tile
      */
-    public void deleteUnusedPlayers(List<Player> players){
-        //go through the board
-        for (int row = 0; row < board.length; row++){
-            for (int col = 0; col < board[row].length; col++){
-                //if it is a player tile, check whether they are a active [player
-                if (this.getTile(row, col).isPlayer()){
-                    boolean inGame = false;
-                    for(Player p: players){
-                        if (p.toString().equals(board[row][col].getName())){
-                            inGame = true;
-                            break;
-                        }
-                    }
-                    //if not, replace with a hallway tile
-                    if (!inGame){
-                        board[row][col] = new RoomTile();
-                    }
-                }
-            }
-        }
+    public BoardTile getTileAt(Position position){
+        return board[position.getRow()][position.getCol()];
     }
 
     /**
-     * find a specific player's position on the board
-     * @param p the name of the person to be found
-     * @return the position of found player
+     * Returns the room of a player
+     * @param p
+     *   The player to find the room of
      */
-    public Position findPlayer(Player p){
-        for (int row = 0; row < board.length; row++){
-            for (int col = 0; col < board[row].length; col++){
-                if (this.getTile(row, col).getName().equals(p.getPersonType().toString())){
-                    return new Position(row, col);
-                }
-            }
-        }
-        return null;
+    public RoomCard.RoomType getPlayerRoom(Player p) {
+        return ((RoomTile)getTileAt(findPlayer(p))).getRoom();
     }
 
+    /**
+     * Sets how the board should be output
+     * @param i
+     *   0 for Unicode, 1 for ASCII
+     */
+    public static void setPrintMode(int i) {
+        if(i == 0) {
+            fullWall = '\u2588';
+            leftWall = '\u258c';
+            rightWall = '\u2590';
+            upWall = '\u2580';
+            downWall = '\u2584';
+            roomFloor = '\u2592';
+            hallwayFloor = '\u2591';
+            combiningString = "\u0347\u033f";
+        } else if(i == 1) {
+            fullWall = '#';
+            leftWall = '|';
+            rightWall = '|';
+            upWall = '"';
+            downWall = '_';
+            roomFloor = ':';
+            hallwayFloor = '.';
+            combiningString = "";
+        }
+    }
+
+    @SuppressWarnings("ForLoopReplaceableByForEach")
     @Override
     public String toString() {
         StringBuilder str = new StringBuilder();
@@ -178,112 +211,230 @@ public class Board {
         return str.toString();
     }
 
-    public BoardTile getTile(int row, int col){
-        return board[row][col];
+    //=======================================================
+    //  Private Utility Methods
+    //=======================================================
+
+    /**
+     * Checks if the given position is out of bounds of the board
+     * @param position
+     *   The position to check
+     * @return
+     *   True if it is out of bounds
+     */
+    private boolean isOutOfBounds(Position position) {
+        return position.getRow() >= board.length ||
+                position.getRow() < 0 ||
+                position.getCol() >= board[0].length ||
+                position.getCol() < 0;
+    }
+
+    /**
+     * Find a specific player's position on the board
+     * @param p
+     *   The name of the person to be found
+     * @return
+     *   The position of found player
+     */
+    private Position findPlayer(Player p) {
+        for (int row = 0; row < board.length; row++){
+            for (int col = 0; col < board[row].length; col++){
+                if(!(board[row][col] instanceof RoomTile))
+                    continue;
+                if(((RoomTile)board[row][col]).getPlayer() == p)
+                    return new Position(row, col);
+            }
+        }
+        throw new IllegalStateException("Couldn't find the player");
+    }
+
+    /**
+     * Will parse a string into a list of board tiles
+     */
+    private static List<BoardTile> parseRow(String row) throws BoardFormatException{
+        String[] args = row.split("/");
+        List<BoardTile> tiles = new ArrayList<>();
+        for(String s : args) {
+            switch (s.charAt(0)) {
+                case '0':
+                    tiles.add(parseRoomTile(s));
+                    break;
+                case 'f':
+                    tiles.add(parseVoidTile(s));
+                    break;
+                case '\n':
+                    return tiles;
+                default:
+                    tiles.add(parseWallTile(s));
+            }
+        }
+        return tiles;
+    }
+
+    /**
+     * Will parse a string into the positions of the players on the board
+     */
+    private void parsePlayerRow(String row, List<Player> players) throws BoardFormatException {
+        String[] args = row.split("[|]");
+        Map<PersonCard.PersonType, Player> playerMap = new HashMap<>();
+        for(Player p : players) {
+            playerMap.put(p.getPersonType(), p);
+        }
+        for(String s : args) {
+            String[] values = s.split(",");
+            if(values.length != 3)
+                throw new BoardFormatException("Exception during board parsing.\n\"Malformed player position line\"");
+
+            PersonCard.PersonType personType;
+            switch (values[0]) {
+                case "w":
+                    personType = PersonCard.PersonType.MRS_WHITE;
+                    break;
+                case "g":
+                    personType = PersonCard.PersonType.MR_GREEN;
+                    break;
+                case "c":
+                    personType = PersonCard.PersonType.MRS_PEACOCK;
+                    break;
+                case "p":
+                    personType = PersonCard.PersonType.PROFESSOR_PLUM;
+                    break;
+                case "s":
+                    personType = PersonCard.PersonType.MISS_SCARLETT;
+                    break;
+                case "m":
+                    personType = PersonCard.PersonType.COLONEL_MUSTARD;
+                    break;
+                default:
+                    throw new BoardFormatException("Exception during board parsing.\n\"Invalid person\"");
+            }
+            if(playerMap.containsKey(personType))
+                addPlayer(playerMap.get(personType), values);
+        }
+    }
+
+    /**
+     *
+     */
+    private void addPlayer(Player p, String[] args) throws BoardFormatException {
+        Position pos;
+        try {
+            pos = new Position(Integer.parseInt(args[2]), Integer.parseInt(args[1]));
+        } catch(NumberFormatException e) {
+            throw new BoardFormatException("Exception during board parsing.\n\"Invalid coordinates\"");
+        }
+        BoardTile tile = getTileAt(pos);
+        if(!(tile instanceof RoomTile))
+            throw new BoardFormatException("Exception during board parsing.\n\"Player start position invalid\"");
+        ((RoomTile)tile).setPlayer(p);
+    }
+
+    /**
+     * Parses one RoomTile
+     * @param tile
+     *   String representing the tile
+     */
+    private static BoardTile parseRoomTile(String tile) throws BoardFormatException{
+        if(tile.length() != 2)
+            throw new BoardFormatException("Exception during board parsing.\n\"Tile descriptor has invalid length\"");
+        return new RoomTile(determineRoom(tile.charAt(1)));
+    }
+
+    /**
+     * Parses one VoidTile
+     * @param tile
+     *   String representing the tile
+     */
+    private static BoardTile parseVoidTile(String tile) throws BoardFormatException{
+        if(tile.length() != 2)
+            throw new BoardFormatException("Exception during board parsing.\n\"Tile descriptor has invalid length\"");
+        if(tile.charAt(1) == 'E')
+            return new VoidTile("  ");
+        return new VoidTile(determineRoom(tile.charAt(1)));
+    }
+
+    /**
+     * Parses one WallTile
+     * @param tile
+     *   String representing the tile
+     */
+    private static BoardTile parseWallTile(String tile) throws BoardFormatException{
+        if(tile.length() != 2)
+            throw new BoardFormatException("Exception during board parsing.\n\"Tile descriptor has invalid length\"");
+        try {
+            return new WallTile(determineRoom(tile.charAt(1)), Short.parseShort("" + tile.charAt(0), 16));
+        } catch (NumberFormatException e) {
+            throw new BoardFormatException("Exception during board parsing.\n\"Invalid wall description\"");
+        }
+    }
+
+    /**
+     * Parses a char into a RoomType
+     * @param c
+     *   Char representing the room
+     */
+    private static RoomCard.RoomType determineRoom(char c) throws BoardFormatException {
+        switch(c) {
+            case 'K':
+                return RoomCard.RoomType.KITCHEN;
+            case 'B':
+                return RoomCard.RoomType.BALL_ROOM;
+            case 'C':
+                return RoomCard.RoomType.CONSERVATORY;
+            case 'D':
+                return RoomCard.RoomType.DINING_ROOM;
+            case 'b':
+                return RoomCard.RoomType.BILLIARD_ROOM;
+            case 'L':
+                return RoomCard.RoomType.LIBRARY;
+            case 'l':
+                return RoomCard.RoomType.LOUNGE;
+            case 'H':
+                return RoomCard.RoomType.HALL;
+            case 'S':
+                return RoomCard.RoomType.STUDY;
+            case 'h':
+            case '0':
+                return null;
+            default:
+                throw new BoardFormatException("Exception during board parsing.\n\"Invalid room: '" + c + "'\"");
+        }
+    }
+
+    /**
+     * Parses a char into a move direction
+     * @param c
+     *   Char representing the direction
+     */
+    private static BoardTile.MoveDirection parseDirection(char c) {
+        switch (c) {
+            case 'l':
+                return BoardTile.MoveDirection.LEFT;
+            case 'r':
+                return BoardTile.MoveDirection.RIGHT;
+            case 'u':
+                return BoardTile.MoveDirection.UP;
+            case 'd':
+                return BoardTile.MoveDirection.DOWN;
+            default:
+                return null;
+        }
     }
 
     //TODO remove this when not needed for testing anymore
     public static void main(String[] args) throws BoardFormatException {
-        System.out.println(new Board(new File("board-layout.dat")));
-    }
-
-    /**
-     * Checks whether a specific input is valid
-     * @param input the input string to move the player
-     * @param diceNumber the number the player rolled on the dice
-     * @param start the player's starting position
-     * @return true if the move is valid, false if not
-     */
-    public boolean checkMove(String input, int diceNumber, Position start, Player p) {
-        if (input.length() == diceNumber){
-            if (findNewPosition(p, input, start).getRow() < board.length && findNewPosition(p, input, start).getRow() > 0 &&
-                    findNewPosition(p, input, start).getCol() < board[0].length && findNewPosition(p, input, start).getCol() > 0) {
-                if(checkWall(input, start)) {
-                    return true;
-                }
-                else{
-                    System.out.println("You can't move through a wall!");
-                    return false;
-                }
-            }
-            else{
-                System.out.println("You can't move outside of the map!");
-                return false;
-            }
-        }
-        else{
-            if (findNewPosition(p, input, start).getRow() < board.length && findNewPosition(p, input, start).getRow() > 0 &&
-                    findNewPosition(p, input, start).getCol() < board[0].length && findNewPosition(p, input, start).getCol() > 0){
-                if(checkWall(input, start)){
-                    if (!board[findNewPosition(p, input, start).getRow()][findNewPosition(p, input, start).getCol()].getName().equals(RoomTile.RoomType.HALLWAY.toString())){
-                        return true;
-                    }
-                }
-            }
-            System.out.println("You must move the same amount of moves as dice rolls!");
-            return false;
-        }
-    }
-
-    /**
-     * Checks if a given input will go through a wall
-     * @param input the input string
-     * @param start the starting position
-     * @return true if there are no walls in the way, false if there are
-     */
-    public boolean checkWall(String input, Position start){
-        boolean noWalls = true;
-        Position currentPosition = start;
-        for (char c: input.toCharArray()){
-            if (c == 'u'){
-                currentPosition = currentPosition.move(-1, 0);
-            }
-            if (c == 'd'){
-                currentPosition = currentPosition.move(1, 0);
-            }
-            if (c == 'r'){
-                currentPosition = currentPosition.move(0, 1);
-            }
-            if (c == 'l'){
-                currentPosition = currentPosition.move(0, -1);
-            }
-            if (board[currentPosition.getRow()][currentPosition.getCol()].getName().equals("WALL")){
-                noWalls = false;
-                break;
-            }
-        }
-        return noWalls;
-    }
-
-    /**
-     * Moves the playerTile on the board, after checking whether the move was valid or not
-     * @param p the player to be moved
-     * @param input the input string, valid
-     */
-    public void movePlayer(Player p, String input) {
-        Position start = findPlayer(p);
-        Position end = findNewPosition(p, input, start);
-        this.getTile(start.getRow(), start.getCol()).setTile(PersonCard.PersonType.NO_PLAYER);
-        this.getTile(end.getRow(), end.getCol()).setTile(p.getPersonType());
-    }
-
-    public Position findNewPosition(Player p, String input, Position start){
-        int rows = 0;
-        int cols = 0;
-        for (char c: input.toCharArray()){
-            if (c == 'u'){
-                rows--;
-            }
-            if (c == 'd'){
-                rows++;
-            }
-            if (c == 'r'){
-                cols++;
-            }
-            if (c == 'l'){
-                cols--;
-            }
-        }
-        return  start.move(rows, cols);
+        ArrayList<Player> al = new ArrayList<>();
+        al.add(new Player(PersonCard.PersonType.COLONEL_MUSTARD));
+        al.add(new Player(PersonCard.PersonType.MISS_SCARLETT));
+        //al.add(new Player(PersonCard.PersonType.MRS_WHITE));
+        al.add(new Player(PersonCard.PersonType.MR_GREEN));
+        al.add(new Player(PersonCard.PersonType.MRS_PEACOCK));
+        al.add(new Player(PersonCard.PersonType.PROFESSOR_PLUM));
+        Board b = new Board(new File("board-layout.dat"), al);
+        Player player = new Player(PersonCard.PersonType.COLONEL_MUSTARD);
+        ((RoomTile)b.board[1][9]).setPlayer(player);
+        b.movePlayer("u", 3, player);
+        setPrintMode(1);
+        System.out.println(b);
     }
 }
