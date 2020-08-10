@@ -6,7 +6,7 @@ import java.util.Set;
 public class PersonCard implements Card {
 	
 	public enum PersonType {
-		MISS_SCARLETT, COLONEL_MUSTARD, MRS_WHITE, MR_GREEN, MRS_PEACOCK, PROFESSOR_PLUM, NO_PLAYER
+		MISS_SCARLETT, COLONEL_MUSTARD, MRS_WHITE, MR_GREEN, MRS_PEACOCK, PROFESSOR_PLUM
 	}
 	
 	private final PersonType personType;

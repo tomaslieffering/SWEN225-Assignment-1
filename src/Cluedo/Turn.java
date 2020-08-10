@@ -304,7 +304,7 @@ public class Turn {
      * @return
      */
     private Card chooseCard(int playerNumber, ArrayList<Card> cards) {
-        System.out.println("Player " + playerNumber + ": You have more than one card suitable to refute this suggestion.");
+        System.out.println("Player " + (playerNumber + 1) + ": You have more than one card suitable to refute this suggestion.");
         System.out.println("Which would you like to choose?");
         int index = 1;
         for (Card c : cards){
@@ -316,6 +316,31 @@ public class Turn {
         return chosen;
     }
 
+    public static int getCardNumber(Scanner sc, int size) {
+        // if there is something that has been typed
+        if (sc.hasNext()) {
+            try {
+                // get the inputed string and try parsing it to a int
+                int card = Integer.parseInt(sc.nextLine());
+                // if the wrong number of player
+                if (card < 1 || card > size) {
+                    System.out.println("Please enter a number between 1 and 3:");
+                    return -1;
+                }
+                // else everything is correct, return the number of players
+                else {
+                    return card;
+                }
+            }
+            // catch parsing exception, if a digit is not inputed
+            catch (Exception e) {
+                System.out.println("Please enter a integer number:");
+                return -1;
+            }
+        }
+        return 0;
+    }
+
     /**
      * Helper method for choice between cards from input
      *
@@ -323,28 +348,30 @@ public class Turn {
      * @param cards
      * @return
      */
-    private Card cardChoice(Scanner sc, ArrayList<Card> cards){
+    private Card cardChoice(Scanner sc, ArrayList<Card> cards) {
         boolean picked = false;
-        while (!picked) {
-            String str = sc.next();
-            switch (str) {
-                case "1":
+        int card = -1;
+        do {
+            card = getCardNumber(sc, cards.size());
+        } while (card == -1);
+        String str = Integer.toString(card);
+        switch (str) {
+            case "1":
+                picked = true;
+                return cards.get(0);
+            case "2":
+                picked = true;
+                return cards.get(1);
+            case "3":
+                if (cards.size() > 2) {
                     picked = true;
-                    return cards.get(0);
-                case "2":
-                    picked = true;
-                    return cards.get(1);
-                case "3":
-                    if (cards.size() > 2) {
-                        picked = true;
-                        return cards.get(2);
-                    } else {
-                        picked = false;
-                        System.out.println("There are only two options! Please pick 1 or 2");
-                    }
-            }
+                    return cards.get(2);
+                } else {
+                    picked = false;
+                    System.out.println("There are only two options! Please pick 1 or 2");
+                }
         }
+
         return null;
     }
-    //checking accusation
 }

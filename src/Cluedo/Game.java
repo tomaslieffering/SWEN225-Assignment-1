@@ -16,6 +16,7 @@ public class Game {
 
 	Set<Card> envelope = new HashSet<>();
 	List<Player> players = new ArrayList<>();
+	Map<WeaponCard.WeaponType, RoomCard.RoomType> weaponsInRoom = new HashMap<>();
 	Board board;
 	boolean isOver = false;
 
@@ -58,10 +59,18 @@ public class Game {
 				Turn t = new Turn(players);
 				if (r != null) {
 					System.out.println("You have entered the " + r.toString());
+					System.out.println("The weapons in this room are: ");
+					for (Map.Entry<WeaponCard.WeaponType, RoomCard.RoomType> e: weaponsInRoom.entrySet()){
+						if (e.getValue() == r){
+							System.out.println(e.getKey());
+						}
+					}
 					System.out.println("Would you like to make a suggestion?");
 					boolean suggest = getYesNo(sc);
 					if (suggest) {
 						Suggestion suggestion = t.makeSuggestion(p, r, false);
+						weaponsInRoom.remove(suggestion.weapon);
+						weaponsInRoom.put(suggestion.weapon, suggestion.room);
 						Player inSuggestion = this.getPlayerFromType(suggestion.person);
 						if (inSuggestion != null) {
 							board.movePlayerToPlayer(p, inSuggestion);
@@ -114,11 +123,23 @@ public class Game {
 		
 		System.out.println("*************************************************\n"
 						 + " Welcome to Cluedo! How many people are playing? \n");
+
 		// get the number of players playing
 		int players;
 		do {
 			players = getNumberPlayers(sc);
 		} while (players == -1);
+
+		System.out.println("Do you want to play using unicode, 'y' or 'n'. (Don't play with unicode if running in Eclipse IDE.)");
+		int unicode = -1;
+		do {
+			unicode = getPrintType(sc);
+		} while (unicode == -1);
+
+		if (unicode == 0){
+			Board.setPrintMode(0);
+		} else
+			Board.setPrintMode(1);
 
 		// get the list of all possible players
 		List<PersonCard.PersonType> characters = new ArrayList<>(Arrays.asList(PersonCard.PersonType.values()));
@@ -126,12 +147,7 @@ public class Game {
 		// assign character to players randomly using Collection.shuffle
 		for (int i = 0; i < players; i++) {
 			Collections.shuffle(characters);
-			if (!characters.get(0).toString().equals(PersonCard.PersonType.NO_PLAYER.toString())){
-				this.players.add(new Player(characters.get(0)));
-			}
-			else{
-				i--;
-			}
+			this.players.add(new Player(characters.get(0)));
 			characters.remove(0);
 		}
 		// tell the players what character they are
@@ -150,10 +166,6 @@ public class Game {
 		
 		//deal cards and displays information to the players
 		dealDeck();
-		System.out.println("The cards in the envelope are:");
-		for (Card c : envelope) {
-			System.out.println(c.toString());
-		}
 
 		for (Player p : this.players) {
 			System.out.println(p.toString() + " has the cards:\n" + p.handToString());
@@ -166,9 +178,18 @@ public class Game {
 			System.out.println("Oops!\n" + e.getCause());
 		}
 
-		//delete players from board not in game
+		List<WeaponCard.WeaponType> weapons = new ArrayList<>(Arrays.asList(WeaponCard.WeaponType.values()));
+		List<RoomCard.RoomType> rooms = new ArrayList<>(Arrays.asList(RoomCard.RoomType.values()));
+		Collections.shuffle(rooms);
+		int roomToPut = 0;
+		for (WeaponCard.WeaponType w: weapons){
+			weaponsInRoom.put(w, rooms.get(roomToPut));
+			roomToPut++;
+		}
 
-		//board.deleteUnusedPlayers(this.players);
+		for (Map.Entry<WeaponCard.WeaponType, RoomCard.RoomType> e: weaponsInRoom.entrySet()){
+			System.out.println("The weapon " + e.getKey() + " is in the room " + e.getValue());
+		}
 
 		System.out.println("Everything is ready! Ready to start?");
 		
@@ -208,6 +229,37 @@ public class Game {
 			}
 		}
 		return 0;
+	}
+
+	/**
+	 * Utility method to get printing type from user
+	 * @param sc the System.in scanner
+	 * @return the value corresponding to unicode or ascii printing
+	 */
+	public static int getPrintType(Scanner sc) {
+		// if there is something that has been typed
+		if (sc.hasNext()) {
+			try {
+				//get the input
+				String input = sc.nextLine();
+				//check whether the input is either 'y' or 'n'
+				if (input.equals("y")) {
+					//return true if yes
+					return 0;
+				}
+				if (input.equals("n")) {
+					return 1;
+				}
+				else {
+					System.out.println("Please enter either 'y' (yes) or 'n' (no)");
+					return -1;
+				}
+			} catch (Exception e) {
+				System.out.println("Please enter either 'y' (yes) or 'n' (no)");
+				return -1;
+			}
+		}
+		return -1;
 	}
 	
 	/**
