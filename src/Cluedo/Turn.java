@@ -8,7 +8,7 @@ import Cluedo.Card.WeaponCard;
 import java.util.*;
 
 public class Turn {
-    private List<Player> players;
+    private final List<Player> players;
 
     Turn(List<Player> players) {
         this.players = players;
@@ -54,6 +54,13 @@ public class Turn {
         }
     }
 
+    /**
+     * asks the player for the suggestion it wants to create and creates it
+     * @param p the player
+     * @param r the roomType
+     * @param accusation is it an accusation?
+     * @return the suggestion object
+     */
     public Suggestion makeSuggestion(Player p, RoomCard.RoomType r, boolean accusation){
         Scanner sc = new Scanner(System.in);
         System.out.println("MISS_SCARLETT   : 1 \n"+
@@ -64,9 +71,7 @@ public class Turn {
                 "PROFESSOR_PLUM  : 6\n");
         System.out.println("Enter a number to select a character");
         int person;
-        do {
-            person = suggestPerson(sc);
-        } while (person == -1);
+        do person = suggestPerson(sc); while (person == -1);
         PersonCard.PersonType personCard = null;
         switch (Integer.toString(person)){
             case "1":
@@ -166,14 +171,23 @@ public class Turn {
                 weaponCard = WeaponCard.WeaponType.SPANNER;
                 break;
         }
-        Suggestion suggestion = new Suggestion(personCard, roomCard, weaponCard);
-        return suggestion;
+        return new Suggestion(personCard, roomCard, weaponCard);
     }
 
+    /**
+     * get a personType from the player
+     * @param sc the system.in scanner
+     * @return the number the player wants to select
+     */
     private int suggestPerson(Scanner sc) {
         return suggestSomething(sc);
     }
 
+    /**
+     * helper method for suggesting something
+     * @param sc the system.in
+     * @return the number of the thing theplayer wants to suggest
+     */
     private int suggestSomething(Scanner sc) {
         if (sc.hasNext()) {
             try {
@@ -194,6 +208,11 @@ public class Turn {
         return 0;
     }
 
+    /**
+     * get number to select a room for a suggestion
+     * @param sc the system.in scanner
+     * @return the number of the thing theplayer wants to suggest
+     */
     private int suggestRoom(Scanner sc) {
         if (sc.hasNext()) {
             try {
@@ -221,7 +240,7 @@ public class Turn {
     /**
      *  Checks if other players have cards that can disprove the suggestion just made
      * @param p - player who made the suggestion
-     * @param suggestion
+     * @param suggestion the suggestion that has been suggested
      */
     public Card disproveSuggestion(Player p, Suggestion suggestion){
         System.out.println("A suggestion has been made. Does anyone have evidence to the contrary?");
@@ -274,10 +293,10 @@ public class Turn {
 
     /**
      * After an accusation has been made, check if the player wins or loses the game
-     * @param p
-     * @param suggestion
-     * @param envelope
-     * @return
+     * @param p the player who made the accusation
+     * @param suggestion the suggestion the accusation is based of
+     * @param envelope the envelope with the actual murder circumstance
+     * @return whether the accusation was correct
      */
     public boolean accusationCheck(Player p, Suggestion suggestion, Set<Card> envelope){
         int found = 0;
@@ -299,9 +318,9 @@ public class Turn {
 
     /**
      * Helper method for player input choose between mutliple cards to disprove
-     * @param playerNumber
-     * @param cards
-     * @return
+     * @param playerNumber what player needs to make a choice
+     * @param cards the cords to be chosen from
+     * @return the selected card
      */
     private Card chooseCard(int playerNumber, ArrayList<Card> cards) {
         System.out.println("Player " + (playerNumber + 1) + ": You have more than one card suitable to refute this suggestion.");
@@ -316,6 +335,12 @@ public class Turn {
         return chosen;
     }
 
+    /**
+     * helper method to get the selected card from the player
+     * @param sc the system.in scanner
+     * @param size how many cards there is to pick from
+     * @return the number of the card that was selected
+     */
     public static int getCardNumber(Scanner sc, int size) {
         // if there is something that has been typed
         if (sc.hasNext()) {
@@ -344,16 +369,14 @@ public class Turn {
     /**
      * Helper method for choice between cards from input
      *
-     * @param sc
-     * @param cards
-     * @return
+     * @param sc the system.in scanner
+     * @param cards the cards to pick from
+     * @return the card choosen
      */
     private Card cardChoice(Scanner sc, ArrayList<Card> cards) {
         boolean picked = false;
         int card = -1;
-        do {
-            card = getCardNumber(sc, cards.size());
-        } while (card == -1);
+        do card = getCardNumber(sc, cards.size()); while (card == -1);
         String str = Integer.toString(card);
         switch (str) {
             case "1":
@@ -367,7 +390,6 @@ public class Turn {
                     picked = true;
                     return cards.get(2);
                 } else {
-                    picked = false;
                     System.out.println("There are only two options! Please pick 1 or 2");
                 }
         }
