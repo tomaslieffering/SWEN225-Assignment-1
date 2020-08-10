@@ -5,8 +5,6 @@ import Cluedo.Card.RoomCard;
 import Cluedo.Player;
 import Cluedo.Position;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.*;
 
 public class Board {
@@ -14,6 +12,35 @@ public class Board {
     //=======================================================
     //  Fields
     //=======================================================
+
+    /**
+     * The default board layout
+     */
+    public static final String DEFAULT_BOARD = "fE/fE/fE/fE/fE/fE/fE/fE/fE/0h/fE/fE/fE/fE/0h/fE/fE/fE/fE/fE/fE/fE/fE/fE/\n" +
+            "fK/4K/4K/4K/6K/fE/fE/0h/0h/0h/fB/4B/4B/6B/0h/0h/0h/fE/fC/4C/4C/4C/4C/6C/\n" +
+            "1K/0K/0K/0K/0K/6K/0h/0h/5B/4B/0B/0B/0B/0B/4B/6B/0h/0h/1C/0C/0C/0C/0C/2C/\n" +
+            "1K/0K/0K/0K/0K/2K/0h/0h/1B/0B/0B/0B/0B/0B/0B/2B/0h/0h/1C/0C/0C/0C/0C/aC/\n" +
+            "9K/0K/0K/0K/0K/2K/0h/0h/0B/0B/0B/0B/0B/0B/0B/0B/0h/0h/0h/9C/8C/8C/aC/fE/\n" +
+            "fE/9K/8K/8K/0K/aK/0h/0h/1B/0B/0B/0B/0B/0B/0B/2B/0h/0h/0h/0h/0h/0h/0h/0h/\n" +
+            "0h/0h/0h/0h/0h/0h/0h/0h/9B/8B/8B/8B/8B/8B/0B/aB/0h/0h/0h/0h/0h/0h/0h/fE/\n" +
+            "fE/0h/0h/0h/0h/0h/0h/0h/0h/0h/0h/0h/0h/0h/0h/0h/0h/0h/fb/4b/4b/4b/4b/6b/\n" +
+            "fD/4D/4D/4D/6D/0h/0h/0h/0h/0h/0h/0h/0h/0h/0h/0h/0h/0h/0b/0b/0b/0b/0b/2b/\n" +
+            "1D/0D/0D/0D/0D/4D/4D/6D/0h/0h/f0/f0/f0/f0/f0/0h/0h/0h/1b/0b/0b/0b/0b/2b/\n" +
+            "1D/0D/0D/0D/0D/0D/0D/2D/0h/0h/f0/f0/f0/f0/f0/0h/0h/0h/1b/0b/0b/0b/0b/2b/\n" +
+            "1D/0D/0D/0D/0D/0D/0D/0D/0h/0h/f0/f0/f0/f0/f0/0h/0h/0h/9b/8b/8b/8b/0b/ab/\n" +
+            "1D/0D/0D/0D/0D/0D/0D/2D/0h/0h/f0/f0/f0/f0/f0/0h/0h/0h/0h/0h/0h/0h/0h/fE/\n" +
+            "1D/0D/0D/0D/0D/0D/0D/2D/0h/0h/f0/f0/f0/f0/f0/0h/0h/0h/fL/4L/0L/4L/6L/fE/\n" +
+            "9D/8D/8D/8D/8D/8D/0D/aD/0h/0h/f0/f0/f0/f0/f0/0h/0h/5L/0L/0L/0L/0L/0L/6L/\n" +
+            "fE/0h/0h/0h/0h/0h/0h/0h/0h/0h/f0/f0/f0/f0/f0/0h/0h/0L/0L/0L/0L/0L/0L/2L/\n" +
+            "0h/0h/0h/0h/0h/0h/0h/0h/0h/0h/0h/0h/0h/0h/0h/0h/0h/9L/0L/0L/0L/0L/0L/aL/\n" +
+            "fE/0h/0h/0h/0h/0h/0h/0h/0h/fH/4H/0H/0H/4H/6H/0h/0h/0h/9L/8L/8L/8L/aL/fE/\n" +
+            "fl/4l/4l/4l/4l/4l/2l/0h/0h/1H/0H/0H/0H/0H/2H/0h/0h/0h/0h/0h/0h/0h/0h/0h/\n" +
+            "1l/0l/0l/0l/0l/0l/2l/0h/0h/1H/0H/0H/0H/0H/0H/0h/0h/0h/0h/0h/0h/0h/0h/fE/\n" +
+            "1l/0l/0l/0l/0l/0l/2l/0h/0h/1H/0H/0H/0H/0H/2H/0h/0h/1S/4S/4S/4S/4S/4S/6S/\n" +
+            "1l/0l/0l/0l/0l/0l/2l/0h/0h/1H/0H/0H/0H/0H/2H/0h/0h/1S/0S/0S/0S/0S/0S/2S/\n" +
+            "1l/0l/0l/0l/0l/0l/al/0h/0h/1H/0H/0H/0H/0H/2H/0h/0h/1S/0S/0S/0S/0S/0S/2S/\n" +
+            "9l/8l/8l/8l/8l/al/fE/0h/fE/9H/8H/8H/8H/8H/aH/fE/0h/fS/8S/8S/8S/8S/8S/aS/\n" +
+            "+w,9,0|g,14,0|c,23,5|p,23,18|s,7,23|m,0,16";
 
     /**
      * These are the chars used for each segment to draw
@@ -44,43 +71,39 @@ public class Board {
      * @throws BoardFormatException
      *   Thrown if the is an IO exception or if the file does not describe a valid board
      */
-    public Board(File boardLayout, List<Player> players) throws BoardFormatException{
-        try{
-            Scanner scan = new Scanner(boardLayout);
-            String currentRow = scan.nextLine();
-            String playerRow = null;
+    public Board(String boardLayout, List<Player> players) throws BoardFormatException{
+        Scanner scan = new Scanner(boardLayout);
+        String currentRow = scan.nextLine();
+        String playerRow = null;
 
-            // scanning everything into list
-            List<BoardTile> tileList = new ArrayList<>(Board.parseRow(currentRow));
-            int rowLength = tileList.size();
-            while(scan.hasNext()) {
-                currentRow = scan.nextLine();
-                // get player row
-                if(currentRow.startsWith("+")) {
-                    playerRow = currentRow.substring(1);
-                    break;
-                }
-                tileList.addAll(Board.parseRow(currentRow));
-                if(tileList.size() % rowLength != 0)
-                    throw new BoardFormatException("Exception during board parsing.\n\"Row Length mismatched\"");
+        // scanning everything into list
+        List<BoardTile> tileList = new ArrayList<>(Board.parseRow(currentRow));
+        int rowLength = tileList.size();
+        while(scan.hasNext()) {
+            currentRow = scan.nextLine();
+            // get player row
+            if(currentRow.startsWith("+")) {
+                playerRow = currentRow.substring(1);
+                break;
             }
-            if(playerRow == null)
-                throw new BoardFormatException("Exception during board parsing.\n\"Player positions not specified\"");
-
-            // compiling into array
-            BoardTile[][] boardTiles = new BoardTile[tileList.size() / rowLength][rowLength];
-            for(int i = 0; i < boardTiles.length; i++) {
-                for(int j = 0; j < boardTiles[0].length; j++) {
-                    boardTiles[i][j] = tileList.get(j + (i * rowLength));
-                }
-            }
-            board = boardTiles;
-
-            // adding players
-            parsePlayerRow(playerRow, players);
-        } catch (IOException e) {
-            throw new BoardFormatException("Exception during board data file handling.");
+            tileList.addAll(Board.parseRow(currentRow));
+            if(tileList.size() % rowLength != 0)
+                throw new BoardFormatException("Exception during board parsing.\n\"Row Length mismatched\"");
         }
+        if(playerRow == null)
+            throw new BoardFormatException("Exception during board parsing.\n\"Player positions not specified\"");
+
+        // compiling into array
+        BoardTile[][] boardTiles = new BoardTile[tileList.size() / rowLength][rowLength];
+        for(int i = 0; i < boardTiles.length; i++) {
+            for(int j = 0; j < boardTiles[0].length; j++) {
+                boardTiles[i][j] = tileList.get(j + (i * rowLength));
+            }
+        }
+        board = boardTiles;
+
+        // adding players
+        parsePlayerRow(playerRow, players);
     }
 
     //=======================================================
@@ -448,22 +471,5 @@ public class Board {
             default:
                 return null;
         }
-    }
-
-    //TODO remove this when not needed for testing anymore
-    public static void main(String[] args) throws BoardFormatException {
-        ArrayList<Player> al = new ArrayList<>();
-        al.add(new Player(PersonCard.PersonType.COLONEL_MUSTARD));
-        al.add(new Player(PersonCard.PersonType.MISS_SCARLETT));
-        //al.add(new Player(PersonCard.PersonType.MRS_WHITE));
-        al.add(new Player(PersonCard.PersonType.MR_GREEN));
-        al.add(new Player(PersonCard.PersonType.MRS_PEACOCK));
-        al.add(new Player(PersonCard.PersonType.PROFESSOR_PLUM));
-        Board b = new Board(new File("board-layout.dat"), al);
-        Player player = new Player(PersonCard.PersonType.COLONEL_MUSTARD);
-        ((RoomTile)b.board[1][9]).setPlayer(player);
-        b.movePlayer("u", 3, player);
-        setPrintMode(1);
-        System.out.println(b);
     }
 }

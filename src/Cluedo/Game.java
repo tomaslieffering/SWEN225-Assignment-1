@@ -183,7 +183,7 @@ public class Game {
 
 		//create the board
 		try {
-			board = new Board(new File("board-layout.dat"), this.players);
+			board = new Board(Board.DEFAULT_BOARD, this.players);
 		} catch (BoardFormatException e) {
 			System.out.println("Oops!\n" + e.getCause());
 		}
