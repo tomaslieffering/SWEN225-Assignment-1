@@ -37,6 +37,7 @@ public class Game {
 		while (true) {
 			System.out.println("Round " + roundNumber + " starting!");
 			int playerNumber = 1;
+			int numPlayersLeft = 0;
 			for (Player p : players) {
 				if (p.hasLost) {
 					playerNumber++;
@@ -95,6 +96,15 @@ public class Game {
 					}
 				}
 				playerNumber++;
+			}
+			for (Player p: players){
+				if (!p.hasLost){
+					numPlayersLeft++;
+				}
+			}
+			if (numPlayersLeft == 1){
+				System.out.println("Only one player left. Game Over");
+				break gameLoop;
 			}
 			System.out.println("Round " + roundNumber + " finished! Ready for the next round?");
 			//wait for the players to be ready for the next round
@@ -210,7 +220,7 @@ public class Game {
 		// if there is something that has been typed
 		if (sc.hasNext()) {
 			try {
-				// get the inputed string and try parsing it to a int
+				// get the inputted string and try parsing it to a int
 				int players = Integer.parseInt(sc.nextLine());
 				// if the wrong number of player
 				if (players < 3 || players > 6) {
