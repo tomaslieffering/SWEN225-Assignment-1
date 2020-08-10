@@ -221,6 +221,13 @@ public class Board {
         }
     }
 
+    /**
+     * Removes a player form the game
+     */
+    public void killPlayer(Player p) {
+        ((RoomTile)getTileAt(findPlayer(p))).setPlayer(null);
+    }
+
     @SuppressWarnings("ForLoopReplaceableByForEach")
     @Override
     public String toString() {

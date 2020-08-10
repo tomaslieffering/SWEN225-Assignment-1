@@ -29,13 +29,18 @@ public class Game {
 	 * Deals with general playing mechanics until the game is over
 	 */
 	public void play() {
-		int roundNumber  = 1;
+		int roundNumber = 1;
 		boolean ready;
 		Scanner sc = new Scanner(System.in);
-		while (!isOver) {
+		gameLoop:
+		while (true) {
 			System.out.println("Round " + roundNumber + " starting!");
 			int playerNumber = 1;
 			for (Player p : players) {
+				if (p.hasLost) {
+					playerNumber++;
+					continue;
+				}
 				System.out.println(board);
 				int diceNumber = 0;
 				System.out.println("Player " + playerNumber + "'s turn! (" + p.personType.toString() + ") Rolling dice...");
@@ -49,28 +54,32 @@ public class Game {
 					input = getInput(sc);
 				} while (!board.movePlayer(input, diceNumber, p));
 
-					RoomCard.RoomType r = board.getPlayerRoom(p);
-					Turn t = new Turn(players);
-					if (r != null) {
-						System.out.println("You have entered the " + r.toString());
-						System.out.println("Would you like to make a suggestion?");
-						boolean suggest = getYesNo(sc);
-						if (suggest) {
-							Suggestion suggestion = t.makeSuggestion(p, r, false);
-							Card proven = t.disproveSuggestion(p, suggestion);
-							if (proven != null) {
-								System.out.println("Would you now like to make an accusation? This is will be your final guess");
-								boolean accuse = getYesNo(sc);
-								if (accuse) {
-									Suggestion accusation = t.makeSuggestion(p, r, true);
-									boolean win = t.accusationCheck(p, accusation, envelope);
-									if (win) {
-										System.out.println("Player " + playerNumber + " has solved the murder, and wins the game!");
-										isOver = true;
-									} else {
-										System.out.println("Player " + playerNumber + " has guessed incorrectly. They are now out of the game.");
-										p.hasLost = true;
-									}
+				RoomCard.RoomType r = board.getPlayerRoom(p);
+				Turn t = new Turn(players);
+				if (r != null) {
+					System.out.println("You have entered the " + r.toString());
+					System.out.println("Would you like to make a suggestion?");
+					boolean suggest = getYesNo(sc);
+					if (suggest) {
+						Suggestion suggestion = t.makeSuggestion(p, r, false);
+						Player inSuggestion = this.getPlayerFromType(suggestion.person);
+						if (inSuggestion != null) {
+							board.movePlayerToPlayer(p, inSuggestion);
+						}
+						Card proven = t.disproveSuggestion(p, suggestion);
+						if (proven != null) {
+							System.out.println("Would you now like to make an accusation? This is will be your final guess");
+							boolean accuse = getYesNo(sc);
+							if (accuse) {
+								Suggestion accusation = t.makeSuggestion(p, r, true);
+								boolean win = t.accusationCheck(p, accusation, envelope);
+								if (win) {
+									System.out.println("Player " + playerNumber + " has solved the murder, and wins the game!");
+									break gameLoop;
+								} else {
+									System.out.println("Player " + playerNumber + " has guessed incorrectly. They are now out of the game.");
+									p.hasLost = true;
+									board.killPlayer(p);
 								}
 							}
 						}
@@ -86,6 +95,7 @@ public class Game {
 			} while (!ready);
 			roundNumber++;
 		}
+	}
 
 
 	/**
@@ -250,6 +260,20 @@ public class Game {
 			return input;
 		}
 		return "";
+	}
+
+	/**
+	 * gets a player from a specific playerType
+	 * @param p the personType player to find
+	 * @return the player with the given personType, null if not in game
+	 */
+	private Player getPlayerFromType(PersonCard.PersonType p){
+		for (Player player: players){
+			if (player.personType == p){
+				return player;
+			}
+		}
+		return null;
 	}
 
 	/**

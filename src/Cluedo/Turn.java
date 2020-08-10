@@ -1,17 +1,11 @@
 package Cluedo;
 
-import Cluedo.Board.Board;
-import Cluedo.Board.RoomTile;
 import Cluedo.Card.Card;
 import Cluedo.Card.PersonCard;
 import Cluedo.Card.RoomCard;
 import Cluedo.Card.WeaponCard;
-import Cluedo.Game;
 
 import java.util.*;
-
-import static Cluedo.Card.PersonCard.PersonType.NO_PLAYER;
-import static Cluedo.Card.PersonCard.PersonType.PROFESSOR_PLUM;
 
 public class Turn {
     private List<Player> players;
@@ -71,7 +65,7 @@ public class Turn {
         System.out.println("Enter a number to select a character");
         int person;
         do {
-            person = suggestperson(sc);
+            person = suggestPerson(sc);
         } while (person == -1);
         PersonCard.PersonType personCard = null;
         switch (Integer.toString(person)){
@@ -108,7 +102,7 @@ public class Turn {
             System.out.println("Enter a number to select a room");
             int room;
             do {
-                room = suggestroom(sc);
+                room = suggestRoom(sc);
             } while (room == -1);
             switch (Integer.toString(room)) {
                 case "1":
@@ -149,7 +143,7 @@ public class Turn {
         System.out.println("Enter a number to select a tool");
         int tool;
         do {
-            tool = suggesttool(sc);
+            tool = suggestTool(sc);
         } while (tool == -1);
         WeaponCard.WeaponType weaponCard = null;
         switch(Integer.toString(tool)){
@@ -176,7 +170,11 @@ public class Turn {
         return suggestion;
     }
 
-    private int suggestperson(Scanner sc) {
+    private int suggestPerson(Scanner sc) {
+        return suggestSomething(sc);
+    }
+
+    private int suggestSomething(Scanner sc) {
         if (sc.hasNext()) {
             try {
                 int person = Integer.parseInt(sc.nextLine());
@@ -196,7 +194,7 @@ public class Turn {
         return 0;
     }
 
-    private int suggestroom(Scanner sc) {
+    private int suggestRoom(Scanner sc) {
         if (sc.hasNext()) {
             try {
                 int room = Integer.parseInt(sc.nextLine());
@@ -216,24 +214,8 @@ public class Turn {
         return 0;
     }
 
-    private int suggesttool(Scanner sc) {
-        if (sc.hasNext()) {
-            try {
-                int tool = Integer.parseInt(sc.nextLine());
-                if (tool < 1 || tool > 6) {
-                    System.out.println("Please enter a number between 1 and 6:");
-                    return -1;
-                }
-                else {
-                    return tool;
-                }
-            }
-            catch (Exception e) {
-                System.out.println("Please enter a integer number:");
-                return -1;
-            }
-        }
-        return 0;
+    private int suggestTool(Scanner sc) {
+        return suggestSomething(sc);
     }
 
     /**
@@ -246,48 +228,47 @@ public class Turn {
         int originalPlayer = players.indexOf(p), playerNumber = players.indexOf(p), index = 0;
         boolean round = false, found = false;
         Card card = null;
-        while (!round || !found){ //until all players have been asked or card has been found
-            if (playerNumber < players.size()){
-                if (!(players.get(playerNumber).equals(p))){
-                    System.out.println("Checking with player " + playerNumber + "...");
+        while (!round && !found) { //until all players have been asked or card has been found
+            if (playerNumber < players.size()) {
+                if (!(players.get(playerNumber).equals(p))) {
+                    System.out.println("Checking with player " + (playerNumber + 1) + "...");
                     Player next = players.get(playerNumber);
                     ArrayList<Card> cards = new ArrayList<Card>();
                     List<Card> plHand = next.hand;
-                    for (Card c : plHand){
-                        if (c.toString().equals(suggestion.person.toString())){
+                    for (Card c : plHand) {
+                        if (c.toString().equals(suggestion.person.toString())) {
                             cards.add(c);
-                        } else if (c.toString().equals(suggestion.room.toString())){
+                        } else if (c.toString().equals(suggestion.room.toString())) {
                             cards.add(c);
-                        } else if (c.toString().equals(suggestion.weapon.toString())){
+                        } else if (c.toString().equals(suggestion.weapon.toString())) {
                             cards.add(c);
                         }
                     }
                     if (cards.size() == 1) {
                         found = true;
                         card = cards.get(0);
+                        System.out.println("Player " + (playerNumber + 1)  + " (" + players.get(playerNumber).personType.toString() + ")");
+                        System.out.print(" whispers to Player " + (originalPlayer + 1) + " (" + players.get(originalPlayer).personType.toString() + ")");
+                        System.out.println(" I have evidence against " + card.toString());
                     } else if (cards.size() >= 2) {
                         found = true;
                         card = chooseCard(playerNumber, cards);
-                    } else if (cards.size() == 0) {
-                        System.out.println("Player " + playerNumber + " cannot help.");
+                        System.out.println("Player " + (playerNumber + 1) + " (" + players.get(playerNumber).personType.toString() + ")");
+                        System.out.print(" whispers to Player " + (originalPlayer + 1) + " (" + players.get(originalPlayer).personType.toString() + ")");
+                        System.out.println(" I have evidence against " + card.toString());
+                    } else {
+                        System.out.println("Player " + (playerNumber + 1) + " cannot help.");
                     }
                 }
                 playerNumber++;
-                index++;
-                if (index >= players.size()){
-                    round = true;
-                }
             } else {
-                playerNumber = 0;
-                index++;
-                if (index >= players.size()){
-                    round = true;
-                }
+                playerNumber = 1;
+            }
+            index++;
+            if (index >= players.size()) {
+                round = true;
             }
         }
-        System.out.println("Player " + playerNumber + " (" + players.get(playerNumber - 1).personType.toString() + ")");
-        System.out.print(" whispers to Player " + (originalPlayer + 1) + " (" + players.get(originalPlayer).personType.toString() + ")");
-        System.out.println(" I have evidence against " + card.toString());
         return card;
     }
 
