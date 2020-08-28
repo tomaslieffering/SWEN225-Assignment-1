@@ -9,16 +9,28 @@ import Cluedo.Card.PersonCard;
 import Cluedo.Card.RoomCard;
 import Cluedo.Card.WeaponCard;
 
+import java.awt.*;
 import java.io.File;
 import java.util.*;
+import java.util.List;
 
-public class Game {
+public class Game extends GUI{
 
 	Set<Card> envelope = new HashSet<>();
 	List<Player> players = new ArrayList<>();
 	Map<WeaponCard.WeaponType, RoomCard.RoomType> weaponsInRoom = new HashMap<>();
 	Board board;
 	boolean isOver = false;
+
+	@Override
+	protected void drawBoard(Graphics g) {
+
+	}
+
+	@Override
+	protected void drawCards(Graphics g) {
+
+	}
 
 	public static void main(String[] args) {
 		Game game = new Game();
