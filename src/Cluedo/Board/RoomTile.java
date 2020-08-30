@@ -4,6 +4,8 @@ package Cluedo.Board;
 import Cluedo.Card.RoomCard;
 import Cluedo.Player;
 
+import java.awt.*;
+
 public class RoomTile implements BoardTile {
 
     /**
@@ -16,6 +18,25 @@ public class RoomTile implements BoardTile {
      * The value null is used for Hallway
      */
     protected RoomCard.RoomType room;
+
+    /**
+     * Colors of the floor tiles
+     */
+    public static Color lightTile = new Color(0x777777);
+    public static Color darkTile = new Color(0x676767);
+    public static Color lightRoomTile = new Color(0x75525D);
+    public static Color darkRoomTile = new Color(0x664751);
+
+    /**
+     * Colors of the players
+     */
+    public static Color white = new Color(0x91F2F2);
+    public static Color green = new Color(0x42BD44);
+    public static Color plum = new Color(0xAD40C9);
+    public static Color scarlett = new Color(0xD1355E);
+    public static Color mustard = new Color(0xD0A230);
+    public static Color peacock = new Color(0x4A58E1);
+
 
     //=======================================================
     //  Constructors
@@ -50,6 +71,48 @@ public class RoomTile implements BoardTile {
     @Override
     public boolean canMoveFromHere(MoveDirection direction) {
         return true;
+    }
+
+    @Override
+    public void draw(Graphics g, int xPos, int yPos) {
+        if ((xPos + yPos) % 40 == 0) {
+            if (room != null)
+                g.setColor(lightRoomTile);
+            else
+                g.setColor(lightTile);
+        }
+        else {
+            if (room != null)
+                g.setColor(darkRoomTile);
+            else
+                g.setColor(darkTile);
+        }
+        g.fillRect(xPos, yPos, 20, 20);
+        if(player != null) {
+            switch (player.getPersonType()) {
+                case MRS_WHITE:
+                    g.setColor(white);
+                    break;
+                case MR_GREEN:
+                    g.setColor(green);
+                    break;
+                case PROFESSOR_PLUM:
+                    g.setColor(plum);
+                    break;
+                case MISS_SCARLETT:
+                    g.setColor(scarlett);
+                    break;
+                case COLONEL_MUSTARD:
+                    g.setColor(mustard);
+                    break;
+                case MRS_PEACOCK:
+                    g.setColor(peacock);
+                    break;
+            }
+            g.fillOval(xPos + 4, yPos + 4, 12, 12);
+            g.setColor(WallTile.wallColor);
+            g.drawOval(xPos + 4, yPos + 4, 12, 12);
+        }
     }
 
     /**

@@ -9,7 +9,11 @@ import Cluedo.Card.PersonCard;
 import Cluedo.Card.RoomCard;
 import Cluedo.Card.WeaponCard;
 
+import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.*;
 import java.util.List;
@@ -20,16 +24,102 @@ public class Game extends GUI{
 	List<Player> players = new ArrayList<>();
 	Map<WeaponCard.WeaponType, RoomCard.RoomType> weaponsInRoom = new HashMap<>();
 	Board board;
-	boolean isOver = false;
+	Player currentPlayer;
+	int diceNumber1 = 0;
+	int diceNumber2 = 0;
+
+	RoomCard.RoomType hoveredRoom = null;
 
 	@Override
 	protected void drawBoard(Graphics g) {
+		if (board != null) {
+			board.draw(g);
+		}
+		if (hoveredRoom != null) {
+			g.setColor(new Color(0x000000));
+			g.fillRect(0, 480, 120, 20);
+			g.setColor(new Color(0xFFFFFF));
+			g.drawString(hoveredRoom.toString().replace('_', ' '), 5, 495);
+		}
+	}
 
+	@Override
+	protected void doMouseMoved(MouseEvent e) {
+		if (board == null)
+			return;
+		if (e.getX() <= 10 || e.getX() >= 490 ||
+				e.getY() <= 10 || e.getY() >= 490)
+			return;
+		Position position = new Position((e.getY() - 10) / 20, (e.getX() - 10) / 20);
+		BoardTile tile = board.getTileAt(position);
+		if (tile instanceof RoomTile) {
+			if (hoveredRoom != ((RoomTile) tile).getRoom()) {
+				hoveredRoom = ((RoomTile) tile).getRoom();
+				boardGraphics.updateUI();
+			}
+		}
 	}
 
 	@Override
 	protected void drawCards(Graphics g) {
+		int xPos = 200;
+		if (currentPlayer != null) {
+			g.setColor(new Color(0x060606));
+			g.fillRect(0, 0, 1150, 200);
+			g.setColor(new Color (0x75525D));
+			for (Card c : currentPlayer.hand) {
+				c.draw(g, xPos, 10);
+				xPos += 140;
+			}
+		}
+	}
 
+	@Override
+	protected void drawDice(Graphics g) {
+		drawSingleDice(g, 10, 10, diceNumber1);
+		drawSingleDice(g, 70, 10, diceNumber2);
+	}
+
+
+	public void drawSingleDice(Graphics g, int xPos, int yPos, int value) {
+		g.setColor(new Color(0x75525D));
+		g.fillRoundRect(xPos, yPos, 50, 50, 10, 10);
+		g.setColor(new Color(0x664751));
+		g.drawRoundRect(xPos, yPos, 50, 50, 10, 10);
+		g.setColor(Color.BLACK);
+		if (value == 1) {
+			g.drawOval(xPos + 22, yPos + 22, 6, 6);
+		}
+		if (value == 2) {
+			g.drawOval(xPos + 39, yPos + 39, 6, 6);
+			g.drawOval(xPos + 5, yPos + 5, 6, 6);
+		}
+		if (value == 3) {
+			g.drawOval(xPos + 39, yPos + 39, 6, 6);
+			g.drawOval(xPos + 5, yPos + 5, 6, 6);
+			g.drawOval(xPos + 22, yPos + 22, 6, 6);
+		}
+		if (value == 4) {
+			g.drawOval(xPos + 39, yPos + 39, 6, 6);
+			g.drawOval(xPos + 5, yPos + 5, 6, 6);
+			g.drawOval(xPos + 5, yPos + 39, 6, 6);
+			g.drawOval(xPos + 39, yPos + 5, 6, 6);
+		}
+		if (value == 5) {
+			g.drawOval(xPos + 39, yPos + 39, 6, 6);
+			g.drawOval(xPos + 5, yPos + 5, 6, 6);
+			g.drawOval(xPos + 5, yPos + 39, 6, 6);
+			g.drawOval(xPos + 39, yPos + 5, 6, 6);
+			g.drawOval(xPos + 22, yPos + 22, 6, 6);
+		}
+		if (value == 6) {
+			g.drawOval(xPos + 39, yPos + 39, 6, 6);
+			g.drawOval(xPos + 5, yPos + 5, 6, 6);
+			g.drawOval(xPos + 5, yPos + 39, 6, 6);
+			g.drawOval(xPos + 39, yPos + 5, 6, 6);
+			g.drawOval(xPos + 5, yPos + 22, 6, 6);
+			g.drawOval(xPos + 39, yPos + 22, 6, 6);
+		}
 	}
 
 	public static void main(String[] args) {
@@ -47,65 +137,78 @@ public class Game extends GUI{
 		Scanner sc = new Scanner(System.in);
 		gameLoop:
 		while (true) {
-			System.out.println("Round " + roundNumber + " starting!");
+			textArea.append("Round " + roundNumber + " starting!");
 			int playerNumber = 1;
 			int numPlayersLeft = 0;
 			for (Player p : players) {
+				boardGraphics.updateUI();
+				currentPlayer = p;
+				drawCards(cardGraphics.getGraphics());
 				if (p.hasLost) {
 					playerNumber++;
 					continue;
 				}
 				System.out.println(board);
-				int diceNumber = 0;
 				System.out.println("Player " + playerNumber + "'s turn! (" + p.personType.toString() + ") Rolling dice...");
-				diceNumber = Turn.rollDice();
-				System.out.println("You have to take " + diceNumber + " moves. What do you want to do?");
+				diceNumber1 = Turn.rollDice();
+				diceNumber2 = Turn.rollDice();
+				drawDice(cardGraphics.getGraphics());
+				System.out.println("You have to take " + (diceNumber1 + diceNumber2) + " moves. What do you want to do?");
 
 				//get input from player
 				String input = "";
 				//make sure the input is correct
 				do {
+					//todo fix button inputs
+					//input = getInput(this);
 					input = getInput(sc);
-				} while (!board.movePlayer(input, diceNumber, p));
+				} while (!board.movePlayer(input, (diceNumber1 + diceNumber2), p));
 
 				RoomCard.RoomType r = board.getPlayerRoom(p);
 				Turn t = new Turn(players);
 				if (r != null) {
-					System.out.println("You have entered the " + r.toString());
+					textArea.append("You have entered the " + r.toString());
 					System.out.println("The weapons in this room are: ");
 					for (Map.Entry<WeaponCard.WeaponType, RoomCard.RoomType> e: weaponsInRoom.entrySet()){
 						if (e.getValue() == r){
 							System.out.println(e.getKey());
 						}
 					}
-					System.out.println("Would you like to make a suggestion?");
-					boolean suggest = getYesNo(sc);
+					textArea.append("Would you like to make a suggestion?");
+					boolean suggest = yesOrNo();
 					if (suggest) {
-						Suggestion suggestion = t.makeSuggestion(p, r, false);
+						Suggestion suggestion = t.makeSuggestion(r, false, this);
+						pLabel.setVisible(false);
+						for (JButton button : characters.values()) {
+							button.setVisible(false);
+						}
+						wLabel.setVisible(false);
+						for (JButton button : weapons.values()) {
+							button.setVisible(false);
+						}
 						weaponsInRoom.remove(suggestion.weapon);
 						weaponsInRoom.put(suggestion.weapon, suggestion.room);
 						Player inSuggestion = this.getPlayerFromType(suggestion.person);
 						if (inSuggestion != null) {
 							board.movePlayerToPlayer(p, inSuggestion);
 						}
-						Card proven = t.disproveSuggestion(p, suggestion);
-						if (proven != null) {
-							System.out.println("Would you now like to make an accusation? This is will be your final guess");
-							boolean accuse = getYesNo(sc);
-							if (accuse) {
-								Suggestion accusation = t.makeSuggestion(p, r, true);
-								boolean win = t.accusationCheck(p, accusation, envelope);
-								if (win) {
-									System.out.println("Player " + playerNumber + " has solved the murder, and wins the game!");
-									break gameLoop;
-								} else {
-									System.out.println("Player " + playerNumber + " has guessed incorrectly. They are now out of the game.");
-									p.hasLost = true;
-									board.killPlayer(p);
-								}
+						t.disproveSuggestion(p, suggestion, this);
+					}
+						textArea.append("Would you now like to make an accusation? This is will be your final guess");
+						boolean accuse = yesOrNo();
+						if (accuse) {
+							Suggestion accusation = t.makeSuggestion(r, true, this);
+							boolean win = t.accusationCheck(p, accusation, envelope);
+							if (win) {
+								System.out.println("Player " + playerNumber + " has solved the murder, and wins the game!");
+								break gameLoop;
+							} else {
+								System.out.println("Player " + playerNumber + " has guessed incorrectly. They are now out of the game.");
+								p.hasLost = true;
+								board.killPlayer(p);
 							}
 						}
-					}
+
 				}
 				playerNumber++;
 			}
@@ -122,7 +225,7 @@ public class Game extends GUI{
 			//wait for the players to be ready for the next round
 			ready = false;
 			do {
-				ready = getYesNo(sc);
+				ready = doReady();
 			} while (!ready);
 			roundNumber++;
 		}
@@ -136,54 +239,48 @@ public class Game extends GUI{
 
 	public void initialise() {
 		Scanner sc = new Scanner(System.in);
-		System.out.println(" a88888b.  dP                            dP          \r\n" + 
-						   "d8'   `88  88                            88          \r\n" + 
-						   "88         88  dP    dP  .d8888b.  .d888b88  .d8888b. \r\n" + 
-						   "88         88  88    88  88ooood8  88'  `88  88'  `88 \r\n" + 
-						   "Y8.   .88  88  88.  .88  88.  ...  88.  .88  88.  .88 \r\n" + 
-						   " Y88888P'  dP  `88888P'  `88888P'  `88888P8  `88888P'\n");
+		textArea.setBackground(Color.black);
+		textArea.setFont(new Font("Dialog", Font.BOLD, 15));
+		textArea.setForeground(Color.magenta);
+		textArea.append("*************************************************\n"
+		                +"CLUEDO\n");
 		
-		System.out.println("*************************************************\n"
-						 + " Welcome to Cluedo! How many people are playing? \n");
+//		textArea.append(" a88888b.  dP                            dP          \r\n" +
+//						   "d8'   `88  88                            88          \r\n" + 
+//						   "88         88  dP    dP  .d8888b.  .d888b88  .d8888b. \r\n" + 
+//						   "88         88  88    88  88ooood8  88'  `88  88'  `88 \r\n" + 
+//						   "Y8.   .88  88  88.  .88  88.  ...  88.  .88  88.  .88 \r\n" + 
+//						   " Y88888P'  dP  `88888P'  `88888P'  `88888P8  `88888P'\n");
+//		
+		textArea.append("*************************************************\n"
+						 + "Welcome to Cluedo!\n" 
+				         + "How many people are playing?\n");
 
 		// get the number of players playing
 		int players;
+
 		do {
-			players = getNumberPlayers(sc);
+			players = getPlayerNumbers(); //GUI method that allows user to click buttons
 		} while (players == -1);
 
-		System.out.println("Do you want to play using unicode, 'y' or 'n'. (Don't play with unicode if running in Eclipse IDE.)");
-		int unicode = -1;
-		do {
-			unicode = getPrintType(sc);
-		} while (unicode == -1);
-
-		if (unicode == 0){
-			Board.setPrintMode(0);
-		} else
-			Board.setPrintMode(1);
-
-		// get the list of all possible players
-		List<PersonCard.PersonType> characters = new ArrayList<>(Arrays.asList(PersonCard.PersonType.values()));
-
-		// assign character to players randomly using Collection.shuffle
-		for (int i = 0; i < players; i++) {
-			Collections.shuffle(characters);
-			this.players.add(new Player(characters.get(0)));
-			characters.remove(0);
+		//let players select characters
+		int index = 1;
+		while (this.players.size() < players){
+			textArea.append("Player " + index + ": choose a character to play \n");
+			PersonCard.PersonType selected = chooseChar();
+			this.players.add(new Player(selected));
+			index++;
 		}
-		// tell the players what character they are
-		int i = 1;
-		for (Player p : this.players) {
-			System.out.println("Player " + i + " is: " + p.toString());
-			i++;
+		for (JRadioButton button : people.values()){
+			button.setVisible(false);
 		}
-		System.out.println("Ready to shuffle and deal?");
+
+		textArea.append("Ready to shuffle and deal?\n");
 		
 		//waits for the player to say they are ready
 		boolean ready;
 		do {
-			ready = getYesNo(sc);
+			ready = doReady();
 		} while (!ready);
 		
 		//deal cards and displays information to the players
@@ -213,108 +310,124 @@ public class Game extends GUI{
 			System.out.println("The weapon " + e.getKey() + " is in the room " + e.getValue());
 		}
 
-		System.out.println("Everything is ready! Ready to start?");
+		textArea.append("Everything is ready! Ready to start?\n");
 		
 		//waits for the player to say they are ready
 		ready = false;
 		do {
-			ready = getYesNo(sc);
+			ready = doReady();
 		} while (!ready);
 	}
 
-	/**
-	 * Helper method to get the number of players, and handles input errors
-	 * 
-	 * @param sc the scanner which reads in from the System.in standard input
-	 * @return the number of people playing or -1 if there is a error
-	 */
-	public static int getNumberPlayers(Scanner sc) {
-		// if there is something that has been typed
-		if (sc.hasNext()) {
-			try {
-				// get the inputted string and try parsing it to a int
-				int players = Integer.parseInt(sc.nextLine());
-				// if the wrong number of player
-				if (players < 3 || players > 6) {
-					System.out.println("Please enter a number between 3 and 6:");
-					return -1;
-				}
-				// else everything is correct, return the number of players
-				else {
-					return players;
-				}
-			}
-			// catch parsing exception, if a digit is not inputed
-			catch (Exception e) {
-				System.out.println("Please enter a integer number:");
-				return -1;
+	public PersonCard.PersonType chooseChar(){
+		final PersonCard.PersonType[] selected = new PersonCard.PersonType[1];
+		for (JRadioButton p : people.values()){
+			p.setVisible(true);
+		}
+		while (selected[0] == null) {
+			for (PersonCard.PersonType pt : people.keySet()) {
+				JRadioButton button = people.get(pt);
+				button.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						button.setEnabled(false);
+						button.setSelected(true);
+						selected[0] = pt;
+					}
+				});
 			}
 		}
-		return 0;
+		return selected[0];
 	}
 
 	/**
-	 * Utility method to get printing type from user
-	 * @param sc the System.in scanner
-	 * @return the value corresponding to unicode or ascii printing
+	 * New getPlayerNumber method to select number of players: uses buttons
 	 */
-	public static int getPrintType(Scanner sc) {
-		// if there is something that has been typed
-		if (sc.hasNext()) {
-			try {
-				//get the input
-				String input = sc.nextLine();
-				//check whether the input is either 'y' or 'n'
-				if (input.equals("y")) {
-					//return true if yes
-					return 0;
-				}
-				if (input.equals("n")) {
-					return 1;
-				}
-				else {
-					System.out.println("Please enter either 'y' (yes) or 'n' (no)");
-					return -1;
-				}
-			} catch (Exception e) {
-				System.out.println("Please enter either 'y' (yes) or 'n' (no)");
-				return -1;
-			}
+	private int plSelected = -1;
+	public int getPlayerNumbers(){
+		for (JButton b: playerNumbers){
+			b.setVisible(true);
 		}
-		return -1;
-	}
-	
-	/**
-	 * Gets a yes or no input from the players
-	 * @param sc scanner for the standard input stream
-	 * @return true if yes, false if no
-	 */
-	public static boolean getYesNo(Scanner sc) {
-		//if something has been typed
-		if (sc.hasNext()) {
-			try {
-				//get the input
-				String input = sc.nextLine();
-				//check whether the input is either 'y' or 'n'
-				if (input.equals("y")) {
-					//return true if yes
-					return true;
+
+		for (JButton b : playerNumbers){
+			b.addActionListener(new ActionListener(){
+				public void actionPerformed(ActionEvent e){
+					plSelected = 3 + playerNumbers.indexOf(b);
+					for (JButton button : playerNumbers){
+						button.setVisible(false);
+					}
 				}
-				if (input.equals("n")) {
-					System.out.println("Enter 'y' when you are ready!");
-				}
-				else {
-					System.out.println("Please enter either 'y' (yes) or 'n' (no)");
-				}
-				return false;
-			} catch (Exception e) {
-				System.out.println("Please enter either 'y' (yes) or 'n' (no)");
-				return false;
-			}
+			});
 		}
-		return false;
+		return plSelected;
 	}
 
+	/**
+	 * New yes/no method: uses buttons
+	 */
+	private boolean answer;
+	public boolean yesOrNo(){
+		final boolean[] answered = new boolean[1]; //checks if an answer has been selected
+		while (!answered[0]) {
+			yes.setVisible(true);
+			no.setVisible(true);
+			yes.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					answered[0] = true;
+					answer = true;
+					yes.setVisible(false);
+					no.setVisible(false);
+				}
+			});
+			no.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					answered[0] = true;
+					answer = false;
+					yes.setVisible(false);
+					no.setVisible(false);
+				}
+			});
+		}
+		return answer;
+	}
+
+	public boolean doReady(){
+		final boolean[] bReady = new boolean[1];
+		ready.setVisible(true);
+		while (!bReady[0]) {
+			ready.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					bReady[0] = true;
+					ready.setVisible(false);
+				}
+			});
+		}
+		return bReady[0];
+	}
+
+	String input = "";
+	public String getInput(Game g){
+			left.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					input += "l";
+				}
+			});
+			right.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					input += "r";
+				}
+			});
+			up.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					input += "u";
+				}
+			});
+			down.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					input += "d";
+				}
+			});
+		return input;
+	}
 	/**
 	 * Gets a input from the player of where to move
 	 * @param sc the standard input scanner
@@ -389,4 +502,5 @@ public class Game extends GUI{
 			}
 		}
 	}
+
 }

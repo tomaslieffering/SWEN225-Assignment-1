@@ -3,6 +3,8 @@ package Cluedo.Board;
 import Cluedo.Card.RoomCard;
 import Cluedo.Player;
 
+import java.awt.*;
+
 public class WallTile extends RoomTile {
 
     public static final short LEFT = 0x1;
@@ -14,6 +16,11 @@ public class WallTile extends RoomTile {
      * Represents what faces this wall tile has
      */
     private final short faces;
+
+    /**
+     * Color of the walls
+     */
+    public static Color wallColor = new Color(0x060606);
 
     //=======================================================
     //  CONSTRUCTORS
@@ -48,6 +55,20 @@ public class WallTile extends RoomTile {
             return super.canMoveFromHere(direction);
         }
         return false;
+    }
+
+    @Override
+    public void draw(Graphics g, int xPos, int yPos) {
+        super.draw(g, xPos, yPos);
+        g.setColor(wallColor);
+        if(hasFace(MoveDirection.UP))
+            g.fillRect(xPos, yPos, 20, 2);
+        if(hasFace(MoveDirection.DOWN))
+            g.fillRect(xPos, yPos + 18, 20, 2);
+        if(hasFace(MoveDirection.LEFT))
+            g.fillRect(xPos, yPos, 2, 20);
+        if(hasFace(MoveDirection.RIGHT))
+            g.fillRect(xPos + 18, yPos, 2, 20);
     }
 
     /**
