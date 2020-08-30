@@ -19,6 +19,8 @@ public abstract class GUI {
 
     protected abstract void drawCards(Graphics g);
 
+    protected abstract void drawDice(Graphics g);
+
     private void setupTextArea() {}
 
     private void setupControls() {}
@@ -56,7 +58,7 @@ public abstract class GUI {
                 drawCards(g);
             }
         };
-        cardGraphics.setPreferredSize(new Dimension(700, 200));
+        cardGraphics.setPreferredSize(new Dimension(1100, 200));
         setupCardGraphics();
 
         window.add(textArea, BorderLayout.WEST);

@@ -20,7 +20,9 @@ public class Game extends GUI{
 	List<Player> players = new ArrayList<>();
 	Map<WeaponCard.WeaponType, RoomCard.RoomType> weaponsInRoom = new HashMap<>();
 	Board board;
-	boolean isOver = false;
+	Player currentPlayer;
+	int diceNumber1 = 0;
+	int diceNumber2 = 0;
 
 	@Override
 	protected void drawBoard(Graphics g) {
@@ -29,7 +31,63 @@ public class Game extends GUI{
 
 	@Override
 	protected void drawCards(Graphics g) {
+		int xPos = 200;
+		if (currentPlayer != null) {
+			g.setColor(new Color(0x060606));
+			g.fillRect(0, 0, 1100, 200);
+			g.setColor(new Color (0x75525D));
+			for (Card c : currentPlayer.hand) {
+				c.draw(g, xPos, 10);
+				xPos += 140;
+			}
+		}
+	}
 
+	@Override
+	protected void drawDice(Graphics g) {
+		drawSingleDice(g, 10, 10, diceNumber1);
+		drawSingleDice(g, 70, 10, diceNumber2);
+	}
+
+	public void drawSingleDice(Graphics g, int xPos, int yPos, int value){
+		g.setColor(new Color(0x75525D));
+		g.fillRoundRect(xPos, yPos, 50, 50, 10, 10);
+		g.setColor(new Color(0x664751));
+		g.drawRoundRect(xPos, yPos, 50, 50, 10, 10);
+		g.setColor(Color.BLACK);
+		if (value == 1){
+			g.drawOval(xPos + 22, yPos + 22, 6, 6);
+		}
+		if (value == 2){
+			g.drawOval(xPos + 39, yPos + 39, 6, 6);
+			g.drawOval(xPos + 5, yPos + 5, 6, 6);
+		}
+		if (value == 3){
+			g.drawOval(xPos + 39, yPos + 39, 6, 6);
+			g.drawOval(xPos + 5, yPos + 5, 6, 6);
+			g.drawOval(xPos + 22, yPos + 22, 6, 6);
+		}
+		if (value == 4){
+			g.drawOval(xPos + 39, yPos + 39, 6, 6);
+			g.drawOval(xPos + 5, yPos + 5, 6, 6);
+			g.drawOval(xPos + 5, yPos + 39, 6, 6);
+			g.drawOval(xPos + 39, yPos + 5, 6, 6);
+		}
+		if (value == 5){
+			g.drawOval(xPos + 39, yPos + 39, 6, 6);
+			g.drawOval(xPos + 5, yPos + 5, 6, 6);
+			g.drawOval(xPos + 5, yPos + 39, 6, 6);
+			g.drawOval(xPos + 39, yPos + 5, 6, 6);
+			g.drawOval(xPos + 22, yPos + 22, 6, 6);
+		}
+		if (value == 6){
+			g.drawOval(xPos + 39, yPos + 39, 6, 6);
+			g.drawOval(xPos + 5, yPos + 5, 6, 6);
+			g.drawOval(xPos + 5, yPos + 39, 6, 6);
+			g.drawOval(xPos + 39, yPos + 5, 6, 6);
+			g.drawOval(xPos + 5, yPos + 22, 6, 6);
+			g.drawOval(xPos + 39, yPos + 22, 6, 6);
+		}
 	}
 
 	public static void main(String[] args) {
@@ -51,22 +109,25 @@ public class Game extends GUI{
 			int playerNumber = 1;
 			int numPlayersLeft = 0;
 			for (Player p : players) {
+				currentPlayer = p;
+				drawCards(cardGraphics.getGraphics());
 				if (p.hasLost) {
 					playerNumber++;
 					continue;
 				}
 				System.out.println(board);
-				int diceNumber = 0;
 				System.out.println("Player " + playerNumber + "'s turn! (" + p.personType.toString() + ") Rolling dice...");
-				diceNumber = Turn.rollDice();
-				System.out.println("You have to take " + diceNumber + " moves. What do you want to do?");
+				diceNumber1 = Turn.rollDice();
+				diceNumber2 = Turn.rollDice();
+				drawDice(cardGraphics.getGraphics());
+				System.out.println("You have to take " + (diceNumber1 + diceNumber2) + " moves. What do you want to do?");
 
 				//get input from player
 				String input = "";
 				//make sure the input is correct
 				do {
 					input = getInput(sc);
-				} while (!board.movePlayer(input, diceNumber, p));
+				} while (!board.movePlayer(input, (diceNumber1 + diceNumber2), p));
 
 				RoomCard.RoomType r = board.getPlayerRoom(p);
 				Turn t = new Turn(players);

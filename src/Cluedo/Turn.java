@@ -19,12 +19,7 @@ public class Turn {
      * @return the sum of the two numbers generated
      */
     public static int rollDice() {
-        int diceOne = (int)(Math.random()*6) + 1;
-        int diceTwo = (int)(Math.random()*6) + 1;
-        printDice(diceOne);
-        printDice(diceTwo);
-        System.out.println("= " + (diceOne + diceTwo));
-        return diceOne + diceTwo;
+        return (int)(Math.random()*6) + 1;
     }
 
     /**

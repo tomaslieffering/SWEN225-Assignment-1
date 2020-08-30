@@ -1,5 +1,6 @@
 package Cluedo.Card;
 
+import java.awt.*;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -30,6 +31,12 @@ public class WeaponCard implements Card {
 	@Override
 	public String toString() {
 		return this.weaponType.toString();
+	}
+
+	public void draw(Graphics g, int xPos, int yPos){
+		g.setFont(new Font("Montserrat", Font.BOLD, 10));
+		g.drawRoundRect(xPos, yPos, 130, 180, 20, 20);
+		g.drawString(this.weaponType.toString(), xPos + 10, yPos + 50);
 	}
 
 	public WeaponCard.WeaponType getType(){
