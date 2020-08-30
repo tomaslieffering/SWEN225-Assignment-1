@@ -179,17 +179,7 @@ public class Board {
             currentPosition = currentPosition.move(direction);
             moveCount++;
         }
-        if(moveCount > diceNumber) {
-            System.out.println("You can't use more moves than your roll!");
-            return false;
-        }
-        else if(moveCount < diceNumber) {
-            if(((RoomTile)getTileAt(currentPosition)).getRoom() == startRoom ||
-                    ((RoomTile)getTileAt(currentPosition)).getRoom() == null) {
-                System.out.println("You must use all of your moves if you haven't entered a new room!");
-                return false;
-            }
-        }
+
         RoomTile.movePlayer((RoomTile)getTileAt(start), (RoomTile)getTileAt(currentPosition));
         return true;
     }
