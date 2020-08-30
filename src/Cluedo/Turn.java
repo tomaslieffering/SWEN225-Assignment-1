@@ -6,9 +6,11 @@ import Cluedo.Card.RoomCard;
 import Cluedo.Card.WeaponCard;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.*;
+import java.util.List;
 
 public class Turn {
     private final List<Player> players;
@@ -135,17 +137,17 @@ public class Turn {
         final PersonCard.PersonType[] pers = new PersonCard.PersonType[1];
         final RoomCard.RoomType[] room = new RoomCard.RoomType[1];
         final WeaponCard.WeaponType[] weap = new WeaponCard.WeaponType[1];
-        g.pLabel.setVisible(true);
+        g.clearSelections();
         for (JButton button : g.characters.values()){
             button.setVisible(true);
         }
-        if (accusation){
-            g.rLabel.setVisible(true);
-            for (JButton button : g.rooms.values()){
-                button.setVisible(true);
-            }
+        for (JButton button : g.rooms.values()){
+            button.setVisible(true);
         }
-        g.wLabel.setVisible(true);
+        if (!accusation){
+            room[0] = r;
+            g.rooms.get(r).setBackground(new Color(0x75525D));
+        }
         for (JButton button : g.weapons.values()){
             button.setVisible(true);
         }
@@ -154,7 +156,25 @@ public class Turn {
                 JButton button = g.characters.get(pt);
                 button.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
+                        for (JButton b : g.characters.values()){
+                            b.setBackground(new Color(0x1f1d1d));
+                        }
                         pers[0] = pt;
+                        button.setBackground(new Color(0x75525D));
+                    }
+                });
+            }
+        }
+        while (weap[0] == null) {
+            for (WeaponCard.WeaponType wt : g.weapons.keySet()) {
+                JButton button = g.weapons.get(wt);
+                button.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        for (JButton b : g.weapons.values()){
+                            b.setBackground(new Color(0x1f1d1d));
+                        }
+                        weap[0] = wt;
+                        button.setBackground(new Color(0x75525D));
                     }
                 });
             }
@@ -165,22 +185,14 @@ public class Turn {
                     JButton button = g.rooms.get(rt);
                     button.addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent e) {
+                            for (JButton b : g.rooms.values()){
+                                b.setBackground(new Color(0x1f1d1d));
+                            }
                             room[0] = rt;
+                            button.setBackground(new Color(0x75525D));
                         }
                     });
                 }
-            }
-        } else {
-            room[0] = r;
-        }
-        while (weap[0] == null) {
-            for (WeaponCard.WeaponType wt : g.weapons.keySet()) {
-                JButton button = g.weapons.get(wt);
-                button.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        weap[0] = wt;
-                    }
-                });
             }
         }
         Suggestion suggestion = new Suggestion(pers[0], room[0], weap[0]);
@@ -196,6 +208,27 @@ public class Turn {
             JButton card = new JButton(c.toString());
             selections.put(c,card);
             game.controls.add(card);
+            card.setBackground(new Color(0x1f1d1d));
+            card.setForeground(Color.magenta);
+            card.setFont(new Font("Dialog", Font.BOLD, 15));
+            card.setBorderPainted(false);
+        }
+        ArrayList<JButton> buttons = new ArrayList<>();
+        for (JButton b : selections.values()){
+            buttons.add(b);
+        }
+        if (buttons.size() == 2) {
+            game.layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, buttons.get(0), 0, SpringLayout.HORIZONTAL_CENTER, game.controls);
+            game.layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, buttons.get(1), 0, SpringLayout.HORIZONTAL_CENTER, game.controls);
+            game.layout.putConstraint(SpringLayout.NORTH, buttons.get(0), 50, SpringLayout.NORTH, game.controls);
+            game.layout.putConstraint(SpringLayout.NORTH, buttons.get(1), 100, SpringLayout.NORTH, game.controls);
+        } else if (buttons.size() == 3){
+            game.layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, buttons.get(0), 0, SpringLayout.HORIZONTAL_CENTER, game.controls);
+            game.layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, buttons.get(1), 0, SpringLayout.HORIZONTAL_CENTER, game.controls);
+            game.layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, buttons.get(2), 0, SpringLayout.HORIZONTAL_CENTER, game.controls);
+            game.layout.putConstraint(SpringLayout.NORTH, buttons.get(0), 50, SpringLayout.NORTH, game.controls);
+            game.layout.putConstraint(SpringLayout.NORTH, buttons.get(1), 100, SpringLayout.NORTH, game.controls);
+            game.layout.putConstraint(SpringLayout.NORTH, buttons.get(2), 150, SpringLayout.NORTH, game.controls);
         }
         while (chosen[0] == null) {
             for (Card c : selections.keySet()) {

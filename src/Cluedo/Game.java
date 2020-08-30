@@ -14,7 +14,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
-import java.io.File;
 import java.util.*;
 import java.util.List;
 
@@ -134,7 +133,6 @@ public class Game extends GUI{
 	public void play() {
 		int roundNumber = 1;
 		boolean ready;
-		Scanner sc = new Scanner(System.in);
 		gameLoop:
 		while (true) {
 			textArea.append("Round " + roundNumber + " starting!");
@@ -156,13 +154,18 @@ public class Game extends GUI{
 				System.out.println("You have to take " + (diceNumber1 + diceNumber2) + " moves. What do you want to do?");
 
 				//get input from player
-				String input = "";
-				//make sure the input is correct
-				do {
-					//todo fix button inputs
-					//input = getInput(this);
-					input = getInput(sc);
-				} while (!board.movePlayer(input, (diceNumber1 + diceNumber2), p));
+				left.setVisible(true);
+				right.setVisible(true);
+				down.setVisible(true);
+				up.setVisible(true);
+
+				int movesTaken = 0;
+				doMoves(movesTaken, diceNumber1 + diceNumber2, p, boardGraphics.getGraphics());
+
+				left.setVisible(false);
+				right.setVisible(false);
+				down.setVisible(false);
+				up.setVisible(false);
 
 				RoomCard.RoomType r = board.getPlayerRoom(p);
 				Turn t = new Turn(players);
@@ -178,14 +181,7 @@ public class Game extends GUI{
 					boolean suggest = yesOrNo();
 					if (suggest) {
 						Suggestion suggestion = t.makeSuggestion(r, false, this);
-						pLabel.setVisible(false);
-						for (JButton button : characters.values()) {
-							button.setVisible(false);
-						}
-						wLabel.setVisible(false);
-						for (JButton button : weapons.values()) {
-							button.setVisible(false);
-						}
+						clearSelections();
 						weaponsInRoom.remove(suggestion.weapon);
 						weaponsInRoom.put(suggestion.weapon, suggestion.room);
 						Player inSuggestion = this.getPlayerFromType(suggestion.person);
@@ -199,6 +195,7 @@ public class Game extends GUI{
 						if (accuse) {
 							Suggestion accusation = t.makeSuggestion(r, true, this);
 							boolean win = t.accusationCheck(p, accusation, envelope);
+							clearSelections();
 							if (win) {
 								System.out.println("Player " + playerNumber + " has solved the murder, and wins the game!");
 								break gameLoop;
@@ -227,6 +224,7 @@ public class Game extends GUI{
 			do {
 				ready = doReady();
 			} while (!ready);
+			this.ready.setVisible(false);
 			roundNumber++;
 		}
 	}
@@ -238,7 +236,15 @@ public class Game extends GUI{
 	 */
 
 	public void initialise() {
-		Scanner sc = new Scanner(System.in);
+		exit.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				int quitting = JOptionPane.showConfirmDialog(null, "Are you sure you want to quit?", "Warning", JOptionPane.YES_NO_OPTION);
+				if (quitting == JOptionPane.YES_OPTION){
+					window.dispose();
+				}
+			}
+		});
 		textArea.setBackground(Color.black);
 		textArea.setFont(new Font("Dialog", Font.BOLD, 15));
 		textArea.setForeground(Color.magenta);
@@ -282,6 +288,8 @@ public class Game extends GUI{
 		do {
 			ready = doReady();
 		} while (!ready);
+
+		this.ready.setVisible(false);
 		
 		//deal cards and displays information to the players
 		dealDeck();
@@ -313,10 +321,11 @@ public class Game extends GUI{
 		textArea.append("Everything is ready! Ready to start?\n");
 		
 		//waits for the player to say they are ready
-		ready = false;
+		Boolean sReady = false;
 		do {
-			ready = doReady();
-		} while (!ready);
+			sReady = doReady();
+		} while (!sReady);
+		this.ready.setVisible(false);
 	}
 
 	public PersonCard.PersonType chooseChar(){
@@ -327,12 +336,10 @@ public class Game extends GUI{
 		while (selected[0] == null) {
 			for (PersonCard.PersonType pt : people.keySet()) {
 				JRadioButton button = people.get(pt);
-				button.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						button.setEnabled(false);
-						button.setSelected(true);
-						selected[0] = pt;
-					}
+				button.addActionListener(e -> {
+					button.setEnabled(false);
+					button.setSelected(true);
+					selected[0] = pt;
 				});
 			}
 		}
@@ -349,12 +356,10 @@ public class Game extends GUI{
 		}
 
 		for (JButton b : playerNumbers){
-			b.addActionListener(new ActionListener(){
-				public void actionPerformed(ActionEvent e){
-					plSelected = 3 + playerNumbers.indexOf(b);
-					for (JButton button : playerNumbers){
-						button.setVisible(false);
-					}
+			b.addActionListener(e -> {
+				plSelected = 3 + playerNumbers.indexOf(b);
+				for (JButton button : playerNumbers){
+					button.setVisible(false);
 				}
 			});
 		}
@@ -370,21 +375,17 @@ public class Game extends GUI{
 		while (!answered[0]) {
 			yes.setVisible(true);
 			no.setVisible(true);
-			yes.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					answered[0] = true;
-					answer = true;
-					yes.setVisible(false);
-					no.setVisible(false);
-				}
+			yes.addActionListener(e -> {
+				answered[0] = true;
+				answer = true;
+				yes.setVisible(false);
+				no.setVisible(false);
 			});
-			no.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					answered[0] = true;
-					answer = false;
-					yes.setVisible(false);
-					no.setVisible(false);
-				}
+			no.addActionListener(e -> {
+				answered[0] = true;
+				answer = false;
+				yes.setVisible(false);
+				no.setVisible(false);
 			});
 		}
 		return answer;
@@ -394,59 +395,91 @@ public class Game extends GUI{
 		final boolean[] bReady = new boolean[1];
 		ready.setVisible(true);
 		while (!bReady[0]) {
-			ready.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					bReady[0] = true;
-					ready.setVisible(false);
-				}
-			});
+			ready.addActionListener(e -> bReady[0] = true);
 		}
 		return bReady[0];
 	}
 
-	String input = "";
-	public String getInput(Game g){
-			left.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					input += "l";
-				}
-			});
-			right.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					input += "r";
-				}
-			});
-			up.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					input += "u";
-				}
-			});
-			down.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					input += "d";
-				}
-			});
-		return input;
-	}
 	/**
-	 * Gets a input from the player of where to move
-	 * @param sc the standard input scanner
-	 * @return the input string
+	 *
+	 * @param movesTaken the number of moves taken so far
+	 * @param diceNumber the number rolled
+	 * @param p player
 	 */
-	public static String getInput(Scanner sc){
-		//make sure the player has typed
-		if (sc.hasNext()){
-			String input = sc.nextLine();
-			//check whether the input is vaild
-			for (char c: input.toCharArray()){
-				if (!(c == 'u' || c == 'd' || c == 'l' || c == 'r')){
-					System.out.println("Please enter a combination of 'u' (up), 'd' (down), 'l' (left) or 'r'(right):");
-					return "";
+	public void doMoves(int movesTaken, int diceNumber, Player p, Graphics g){
+		boolean first = true;
+		while (movesTaken < diceNumber) {
+			ActionListener listener = e -> {
+				JButton button = (JButton) e.getSource();
+				if (button == left) {
+					mLeft = true;
 				}
+				if (button == right) {
+					mRight = true;
+				}
+				if (button == up) {
+					mUp = true;
+				}
+				if (button == down) {
+					mDown = true;
+				}
+			};
+
+			if (first) {
+				left.addActionListener(listener);
+				right.addActionListener(listener);
+				down.addActionListener(listener);
+				up.addActionListener(listener);
 			}
-			return input;
+
+			if (mLeft) {
+				if (board.movePlayer("l", 2, p)) {
+					drawBoard(g);
+					movesTaken++;
+				}
+				mLeft = false;
+			} else if (mRight) {
+				if (board.movePlayer("r", 2, p)) {
+					drawBoard(g);
+					movesTaken++;
+				}
+				mRight = false;
+			} else if (mUp) {
+				if (board.movePlayer("u", 2, p)) {
+					drawBoard(g);
+					movesTaken++;
+				}
+				mUp = false;
+			} else if (mDown) {
+				if (board.movePlayer("d", 2, p)) {
+					drawBoard(g);
+					movesTaken++;
+				}
+				mDown = false;
+			}
+			first = false;
+			if (movesTaken == diceNumber - 1){ //if last loop
+				left.removeActionListener(listener);
+				right.removeActionListener(listener);
+				up.removeActionListener(listener);
+				down.removeActionListener(listener);
+			}
 		}
-		return "";
+	}
+
+	public void clearSelections(){
+		for (JButton button : characters.values()) {
+			button.setBackground(new Color(0x1f1d1d));
+			button.setVisible(false);
+		}
+		for (JButton button : weapons.values()) {
+			button.setBackground(new Color(0x1f1d1d));
+			button.setVisible(false);
+		}
+		for (JButton button : rooms.values()){
+			button.setBackground(new Color(0x1f1d1d));
+			button.setVisible(false);
+		}
 	}
 
 	/**

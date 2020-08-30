@@ -9,13 +9,14 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.awt.event.ActionEvent;
+import java.util.*;
+import java.util.List;
 
 public abstract class GUI {
 
     public JMenuBar menuBar;
+    public JMenuItem exit;
     public JFrame window;
     public JTextArea textArea;
     public JPanel controls;
@@ -30,7 +31,10 @@ public abstract class GUI {
     protected Map<PersonCard.PersonType, JButton> characters = new HashMap<>();
     protected Map<WeaponCard.WeaponType, JButton> weapons = new HashMap<>();
     protected Map<RoomCard.RoomType, JButton> rooms = new HashMap<>();
-    protected JLabel pLabel, wLabel, rLabel;
+    private List<JButton> suggestButtons = new ArrayList<>();
+    public boolean mLeft, mRight, mUp, mDown;
+    protected Set<JButton> allButtons = new HashSet<>();
+    protected SpringLayout layout = new SpringLayout();
 
     public GUI() {
         initialize();
@@ -47,83 +51,125 @@ public abstract class GUI {
     private void setupTextArea() {}
 
     private void setupControls() {
-         /*
-        //todo set positions of arrows
+        controls.setLayout(layout);
+
         left = new JButton("←");
         right = new JButton("→");
         up = new JButton("↑");
         down = new JButton("↓");
-        controls.add(left);
-        controls.add(right);
-        controls.add(up);
-        controls.add(down);
-         */
+
+        allButtons.add(left);
+        allButtons.add(right);
+        allButtons.add(down);
+        allButtons.add(up);
+
+        layout.putConstraint(SpringLayout.SOUTH, down, 0, SpringLayout.SOUTH, controls);
+        layout.putConstraint(SpringLayout.SOUTH, right, 0, SpringLayout.SOUTH, controls);
+        layout.putConstraint(SpringLayout.SOUTH, left, 0, SpringLayout.SOUTH, controls);
+        layout.putConstraint(SpringLayout.SOUTH, up, 0, SpringLayout.NORTH, down);
+        layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, down, 0, SpringLayout.HORIZONTAL_CENTER, controls);
+        layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, up, 0, SpringLayout.HORIZONTAL_CENTER, controls);
+        layout.putConstraint(SpringLayout.WEST, right, 0, SpringLayout.EAST, down);
+        layout.putConstraint(SpringLayout.EAST, left, 0, SpringLayout.WEST, down);
+
+
         //todo input number of players --> make pop-up?
-        playerNumbers.add(new JButton("3"));
-        playerNumbers.add(new JButton("4"));
-        playerNumbers.add(new JButton("5"));
-        playerNumbers.add(new JButton("6"));
-        for (JButton b : playerNumbers){
-            controls.add(b);
-            b.setVisible(false);
+        JButton three = new JButton("3");
+        JButton four = new JButton("4");
+        JButton five = new JButton("5");
+        JButton six = new JButton("6");
+
+        playerNumbers.add(three);
+        playerNumbers.add(four);
+        playerNumbers.add(five);
+        playerNumbers.add(six);
+
+        int pad = 55;
+        for (JButton number : playerNumbers){
+            layout.putConstraint(SpringLayout.VERTICAL_CENTER, number, 30, SpringLayout.NORTH, controls);
+            layout.putConstraint(SpringLayout.WEST, number, pad, SpringLayout.WEST, controls);
+            pad += 50;
         }
+
+        allButtons.add(three);
+        allButtons.add(four);
+        allButtons.add(five);
+        allButtons.add(six);
+
         //Todo yes/no selection --> make pop-up?
         yes = new JButton("Yes");
         no = new JButton("No");
         ready = new JButton("Ready");
-        controls.add(yes);
-        controls.add(no);
-        controls.add(ready);
-        yes.setVisible(false);
-        no.setVisible(false);
-        ready.setVisible(false);
 
-        Box chars = Box.createVerticalBox();
+        allButtons.add(yes);
+        layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, yes, -35, SpringLayout.HORIZONTAL_CENTER, controls);
+        layout.putConstraint(SpringLayout.VERTICAL_CENTER, yes, 50, SpringLayout.NORTH, controls);
+        allButtons.add(no);
+        layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, no, 35, SpringLayout.HORIZONTAL_CENTER, controls);
+        layout.putConstraint(SpringLayout.VERTICAL_CENTER, no, 50, SpringLayout.NORTH, controls);
+        allButtons.add(ready);
+        layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, ready, 0, SpringLayout.HORIZONTAL_CENTER, controls);
+        layout.putConstraint(SpringLayout.VERTICAL_CENTER, ready, 50, SpringLayout.NORTH, controls);
+
+        pad = 0;
+        int gap = 20;
 
         //person selection buttons
-        pLabel = new JLabel("People: ");
-        chars.add(pLabel);
-        pLabel.setVisible(false);
-
+        int radioPadY = 50;
         for (PersonCard.PersonType pers : PersonCard.PersonType.values()){
-            characters.put(pers, new JButton(pers.toString()));
-            people.put(pers, new JRadioButton(pers.toString(), false));
+            JButton jp = new JButton(pers.toString());
+            allButtons.add(jp);
+            suggestButtons.add(jp);
+            characters.put(pers, jp);
+            //Radio buttons:
+            JRadioButton jrp = new JRadioButton(pers.toString(), false);
+            jrp.setBackground(new Color(0x1f1d1d));
+            jrp.setVisible(false);
+            jrp.setForeground(Color.magenta);
+            jrp.setFont(new Font("Dialog", Font.BOLD, 15));
+            jrp.setBorderPainted(false);
+            layout.putConstraint(SpringLayout.NORTH, jrp, radioPadY, SpringLayout.NORTH, controls);
+            radioPadY += 30;
+            layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, jrp, 0, SpringLayout.HORIZONTAL_CENTER, controls);
+            people.put(pers, jrp);
+            controls.add(jrp);
         }
-        for (JButton character : characters.values()){
-            chars.add(character);
-            character.setVisible(false);
-        }
-        for (JRadioButton person : people.values()){
-            chars.add(person);
-            person.setVisible(false);
-        }
-
-        //weapon selection buttons
-        wLabel = new JLabel("Weapons: ");
-        chars.add(wLabel);
-        wLabel.setVisible(false);
 
         for (WeaponCard.WeaponType weap : WeaponCard.WeaponType.values()){
-            weapons.put(weap, new JButton(weap.toString()));
-        }
-        for (JButton w : weapons.values()){
-            chars.add(w);
-            w.setVisible(false);
+            JButton jw = new JButton(weap.toString());
+            allButtons.add(jw);
+            suggestButtons.add(jw);
+            weapons.put(weap, jw);
         }
 
         //room selection buttons
-        rLabel = new JLabel("Rooms: ");
-        chars.add(rLabel);
-        rLabel.setVisible(false);
-
         for (RoomCard.RoomType room : RoomCard.RoomType.values()){
-            rooms.put(room, new JButton(room.toString()));
+            JButton jr = new JButton(room.toString());
+            allButtons.add(jr);
+            suggestButtons.add(jr);
+            rooms.put(room, jr);
         }
-        for (JButton r : rooms.values()){
-            chars.add(r);
-            r.setVisible(false);
+
+        int index = 0;
+        for (JButton button : suggestButtons){
+            if (index == 6 || index == 13){
+                pad += gap;
+            }
+            button.setPreferredSize(new Dimension(200, 20));
+            layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, button, 0, SpringLayout.HORIZONTAL_CENTER, controls);
+            layout.putConstraint(SpringLayout.NORTH, button, pad, SpringLayout.NORTH, controls);
+            pad += gap;
+            index++;
         }
-        controls.add(chars);
+
+        for (JButton button : allButtons){
+            button.setBackground(new Color(0x1f1d1d));
+            button.setVisible(false);
+            controls.add(button);
+            button.setForeground(Color.magenta);
+            button.setFont(new Font("Dialog", Font.BOLD, 15));
+            button.setBorderPainted(false);
+        }
     }
 
     private void setupBoardGraphics() {
@@ -141,9 +187,11 @@ public abstract class GUI {
         window = new JFrame();
         menuBar = new JMenuBar();
         JMenu menu;
-        menu=new JMenu("File Game");
+        menu=new JMenu("Cluedo");
         menuBar.add(menu);
         window.setJMenuBar(menuBar);
+        exit = new JMenuItem("Exit game");
+        menuBar.add(exit);
         window.setSize(400,400);
         window.setLayout(null);
         window.setVisible(true);
