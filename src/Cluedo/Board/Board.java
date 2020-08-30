@@ -5,7 +5,9 @@ import Cluedo.Card.RoomCard;
 import Cluedo.Player;
 import Cluedo.Position;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 public class Board {
 
@@ -17,29 +19,29 @@ public class Board {
      * The default board layout
      */
     public static final String DEFAULT_BOARD = "fE/fE/fE/fE/fE/fE/fE/fE/fE/0h/fE/fE/fE/fE/0h/fE/fE/fE/fE/fE/fE/fE/fE/fE/\n" +
-            "fK/4K/4K/4K/6K/fE/fE/0h/0h/0h/fB/4B/4B/6B/0h/0h/0h/fE/fC/4C/4C/4C/4C/6C/\n" +
+            "5K/4K/4K/4K/6K/fE/fE/0h/0h/0h/5B/4B/4B/6B/0h/0h/0h/fE/5C/4C/4C/4C/4C/6C/\n" +
             "1K/0K/0K/0K/0K/6K/0h/0h/5B/4B/0B/0B/0B/0B/4B/6B/0h/0h/1C/0C/0C/0C/0C/2C/\n" +
             "1K/0K/0K/0K/0K/2K/0h/0h/1B/0B/0B/0B/0B/0B/0B/2B/0h/0h/1C/0C/0C/0C/0C/aC/\n" +
             "9K/0K/0K/0K/0K/2K/0h/0h/0B/0B/0B/0B/0B/0B/0B/0B/0h/0h/0h/9C/8C/8C/aC/fE/\n" +
             "fE/9K/8K/8K/0K/aK/0h/0h/1B/0B/0B/0B/0B/0B/0B/2B/0h/0h/0h/0h/0h/0h/0h/0h/\n" +
             "0h/0h/0h/0h/0h/0h/0h/0h/9B/8B/8B/8B/8B/8B/0B/aB/0h/0h/0h/0h/0h/0h/0h/fE/\n" +
-            "fE/0h/0h/0h/0h/0h/0h/0h/0h/0h/0h/0h/0h/0h/0h/0h/0h/0h/fb/4b/4b/4b/4b/6b/\n" +
-            "fD/4D/4D/4D/6D/0h/0h/0h/0h/0h/0h/0h/0h/0h/0h/0h/0h/0h/0b/0b/0b/0b/0b/2b/\n" +
+            "fE/0h/0h/0h/0h/0h/0h/0h/0h/0h/0h/0h/0h/0h/0h/0h/0h/0h/5b/4b/4b/4b/4b/6b/\n" +
+            "5D/4D/4D/4D/6D/0h/0h/0h/0h/0h/0h/0h/0h/0h/0h/0h/0h/0h/0b/0b/0b/0b/0b/2b/\n" +
             "1D/0D/0D/0D/0D/4D/4D/6D/0h/0h/f0/f0/f0/f0/f0/0h/0h/0h/1b/0b/0b/0b/0b/2b/\n" +
             "1D/0D/0D/0D/0D/0D/0D/2D/0h/0h/f0/f0/f0/f0/f0/0h/0h/0h/1b/0b/0b/0b/0b/2b/\n" +
             "1D/0D/0D/0D/0D/0D/0D/0D/0h/0h/f0/f0/f0/f0/f0/0h/0h/0h/9b/8b/8b/8b/0b/ab/\n" +
             "1D/0D/0D/0D/0D/0D/0D/2D/0h/0h/f0/f0/f0/f0/f0/0h/0h/0h/0h/0h/0h/0h/0h/fE/\n" +
-            "1D/0D/0D/0D/0D/0D/0D/2D/0h/0h/f0/f0/f0/f0/f0/0h/0h/0h/fL/4L/0L/4L/6L/fE/\n" +
+            "1D/0D/0D/0D/0D/0D/0D/2D/0h/0h/f0/f0/f0/f0/f0/0h/0h/0h/5L/4L/0L/4L/6L/fE/\n" +
             "9D/8D/8D/8D/8D/8D/0D/aD/0h/0h/f0/f0/f0/f0/f0/0h/0h/5L/0L/0L/0L/0L/0L/6L/\n" +
             "fE/0h/0h/0h/0h/0h/0h/0h/0h/0h/f0/f0/f0/f0/f0/0h/0h/0L/0L/0L/0L/0L/0L/2L/\n" +
             "0h/0h/0h/0h/0h/0h/0h/0h/0h/0h/0h/0h/0h/0h/0h/0h/0h/9L/0L/0L/0L/0L/0L/aL/\n" +
-            "fE/0h/0h/0h/0h/0h/0h/0h/0h/fH/4H/0H/0H/4H/6H/0h/0h/0h/9L/8L/8L/8L/aL/fE/\n" +
-            "fl/4l/4l/4l/4l/4l/2l/0h/0h/1H/0H/0H/0H/0H/2H/0h/0h/0h/0h/0h/0h/0h/0h/0h/\n" +
+            "fE/0h/0h/0h/0h/0h/0h/0h/0h/5H/4H/0H/0H/4H/6H/0h/0h/0h/9L/8L/8L/8L/aL/fE/\n" +
+            "5l/4l/4l/4l/4l/4l/2l/0h/0h/1H/0H/0H/0H/0H/2H/0h/0h/0h/0h/0h/0h/0h/0h/0h/\n" +
             "1l/0l/0l/0l/0l/0l/2l/0h/0h/1H/0H/0H/0H/0H/0H/0h/0h/0h/0h/0h/0h/0h/0h/fE/\n" +
             "1l/0l/0l/0l/0l/0l/2l/0h/0h/1H/0H/0H/0H/0H/2H/0h/0h/1S/4S/4S/4S/4S/4S/6S/\n" +
             "1l/0l/0l/0l/0l/0l/2l/0h/0h/1H/0H/0H/0H/0H/2H/0h/0h/1S/0S/0S/0S/0S/0S/2S/\n" +
             "1l/0l/0l/0l/0l/0l/al/0h/0h/1H/0H/0H/0H/0H/2H/0h/0h/1S/0S/0S/0S/0S/0S/2S/\n" +
-            "9l/8l/8l/8l/8l/al/fE/0h/fE/9H/8H/8H/8H/8H/aH/fE/0h/fS/8S/8S/8S/8S/8S/aS/\n" +
+            "9l/8l/8l/8l/8l/al/fE/0h/fE/9H/8H/8H/8H/8H/aH/fE/0h/9S/8S/8S/8S/8S/8S/aS/\n" +
             "+w,9,0|g,14,0|c,23,5|p,23,18|s,7,23|m,0,16";
 
     /**
@@ -109,6 +111,21 @@ public class Board {
     //=======================================================
     //  Methods
     //=======================================================
+
+    /**
+     * Draws the board in it's current state
+     * @param g
+     *   The graphics pane to output to
+     */
+    public void draw(Graphics g) {
+        g.setColor(WallTile.wallColor);
+        g.fillRect(0, 0, 500,500);
+
+        for(int i = 0; i < board.length; i++) {
+            for(int j = 0; j < board[0].length; j++)
+                board[i][j].draw(g, 10 + (j * 20), 10 + (i * 20));
+        }
+    }
 
     /**
      * Checks whether a specific input is valid, and then moves the player

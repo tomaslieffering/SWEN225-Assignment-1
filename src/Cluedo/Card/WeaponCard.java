@@ -27,16 +27,17 @@ public class WeaponCard implements Card {
 		}
 		return weaponCards;
 	}
-	
-	@Override
-	public String toString() {
-		return this.weaponType.toString();
-	}
 
+	@Override
 	public void draw(Graphics g, int xPos, int yPos){
 		g.setFont(new Font("Montserrat", Font.BOLD, 10));
 		g.drawRoundRect(xPos, yPos, 130, 180, 20, 20);
 		g.drawString(this.weaponType.toString(), xPos + 10, yPos + 50);
+	}
+	
+	@Override
+	public String toString() {
+		return this.weaponType.toString();
 	}
 
 	public WeaponCard.WeaponType getType(){

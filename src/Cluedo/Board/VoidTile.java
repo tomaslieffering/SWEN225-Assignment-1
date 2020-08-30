@@ -2,6 +2,8 @@ package Cluedo.Board;
 
 import Cluedo.Card.RoomCard;
 
+import java.awt.*;
+
 public class VoidTile implements BoardTile {
 
     private final String label;
@@ -49,6 +51,17 @@ public class VoidTile implements BoardTile {
     @Override
     public boolean canMoveFromHere(MoveDirection direction) {
         return false;
+    }
+
+    @Override
+    public void draw(Graphics g, int xPos, int yPos) {
+        g.setColor(WallTile.wallColor);
+        if(label != null) {
+            if(!label.equals("  "))
+                g.fillRect(xPos, yPos, 20, 20);
+        } else {
+            g.fillRect(xPos, yPos, 20, 20);
+        }
     }
 
     @Override

@@ -10,23 +10,52 @@ import Cluedo.Card.RoomCard;
 import Cluedo.Card.WeaponCard;
 
 import java.awt.*;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.*;
 import java.util.List;
 
-public class Game extends GUI{
+public class Game extends GUI {
 
 	Set<Card> envelope = new HashSet<>();
 	List<Player> players = new ArrayList<>();
 	Map<WeaponCard.WeaponType, RoomCard.RoomType> weaponsInRoom = new HashMap<>();
 	Board board;
+
 	Player currentPlayer;
 	int diceNumber1 = 0;
 	int diceNumber2 = 0;
 
+	RoomCard.RoomType hoveredRoom = null;
+
 	@Override
 	protected void drawBoard(Graphics g) {
+		if (board != null) {
+			board.draw(g);
+		}
+		if (hoveredRoom != null) {
+			g.setColor(new Color(0x000000));
+			g.fillRect(0, 480, 120, 20);
+			g.setColor(new Color(0xFFFFFF));
+			g.drawString(hoveredRoom.toString().replace('_', ' '), 5, 495);
+		}
+	}
 
+	@Override
+	protected void doMouseMoved(MouseEvent e) {
+		if (board == null)
+			return;
+		if (e.getX() <= 10 || e.getX() >= 490 ||
+				e.getY() <= 10 || e.getY() >= 490)
+			return;
+		Position position = new Position((e.getY() - 10) / 20, (e.getX() - 10) / 20);
+		BoardTile tile = board.getTileAt(position);
+		if (tile instanceof RoomTile) {
+			if (hoveredRoom != ((RoomTile) tile).getRoom()) {
+				hoveredRoom = ((RoomTile) tile).getRoom();
+				drawBoard(boardGraphics.getGraphics());
+			}
+		}
 	}
 
 	@Override
@@ -35,7 +64,7 @@ public class Game extends GUI{
 		if (currentPlayer != null) {
 			g.setColor(new Color(0x060606));
 			g.fillRect(0, 0, 1100, 200);
-			g.setColor(new Color (0x75525D));
+			g.setColor(new Color(0x75525D));
 			for (Card c : currentPlayer.hand) {
 				c.draw(g, xPos, 10);
 				xPos += 140;
@@ -45,42 +74,53 @@ public class Game extends GUI{
 
 	@Override
 	protected void drawDice(Graphics g) {
-		drawSingleDice(g, 10, 10, diceNumber1);
-		drawSingleDice(g, 70, 10, diceNumber2);
+		drawSingleDice(g, 30, 70, diceNumber1);
+		drawSingleDice(g, 90, 70, diceNumber2);
 	}
 
-	public void drawSingleDice(Graphics g, int xPos, int yPos, int value){
+	/**
+	 * Draws a single dice
+	 * @param g
+	 *   Graphics pane to draw the dice in
+	 * @param xPos
+	 *   X position of the dice
+	 * @param yPos
+	 *   Y position of the dice
+	 * @param value
+	 *   Value on the dice
+	 */
+	public void drawSingleDice(Graphics g, int xPos, int yPos, int value) {
 		g.setColor(new Color(0x75525D));
 		g.fillRoundRect(xPos, yPos, 50, 50, 10, 10);
 		g.setColor(new Color(0x664751));
 		g.drawRoundRect(xPos, yPos, 50, 50, 10, 10);
 		g.setColor(Color.BLACK);
-		if (value == 1){
+		if (value == 1) {
 			g.drawOval(xPos + 22, yPos + 22, 6, 6);
 		}
-		if (value == 2){
+		if (value == 2) {
 			g.drawOval(xPos + 39, yPos + 39, 6, 6);
 			g.drawOval(xPos + 5, yPos + 5, 6, 6);
 		}
-		if (value == 3){
+		if (value == 3) {
 			g.drawOval(xPos + 39, yPos + 39, 6, 6);
 			g.drawOval(xPos + 5, yPos + 5, 6, 6);
 			g.drawOval(xPos + 22, yPos + 22, 6, 6);
 		}
-		if (value == 4){
+		if (value == 4) {
 			g.drawOval(xPos + 39, yPos + 39, 6, 6);
 			g.drawOval(xPos + 5, yPos + 5, 6, 6);
 			g.drawOval(xPos + 5, yPos + 39, 6, 6);
 			g.drawOval(xPos + 39, yPos + 5, 6, 6);
 		}
-		if (value == 5){
+		if (value == 5) {
 			g.drawOval(xPos + 39, yPos + 39, 6, 6);
 			g.drawOval(xPos + 5, yPos + 5, 6, 6);
 			g.drawOval(xPos + 5, yPos + 39, 6, 6);
 			g.drawOval(xPos + 39, yPos + 5, 6, 6);
 			g.drawOval(xPos + 22, yPos + 22, 6, 6);
 		}
-		if (value == 6){
+		if (value == 6) {
 			g.drawOval(xPos + 39, yPos + 39, 6, 6);
 			g.drawOval(xPos + 5, yPos + 5, 6, 6);
 			g.drawOval(xPos + 5, yPos + 39, 6, 6);
@@ -111,11 +151,15 @@ public class Game extends GUI{
 			for (Player p : players) {
 				currentPlayer = p;
 				drawCards(cardGraphics.getGraphics());
+
 				if (p.hasLost) {
 					playerNumber++;
 					continue;
 				}
+
 				System.out.println(board);
+				drawBoard(boardGraphics.getGraphics());
+
 				System.out.println("Player " + playerNumber + "'s turn! (" + p.personType.toString() + ") Rolling dice...");
 				diceNumber1 = Turn.rollDice();
 				diceNumber2 = Turn.rollDice();
@@ -129,13 +173,15 @@ public class Game extends GUI{
 					input = getInput(sc);
 				} while (!board.movePlayer(input, (diceNumber1 + diceNumber2), p));
 
+				drawBoard(boardGraphics.getGraphics());
+
 				RoomCard.RoomType r = board.getPlayerRoom(p);
 				Turn t = new Turn(players);
 				if (r != null) {
 					System.out.println("You have entered the " + r.toString());
 					System.out.println("The weapons in this room are: ");
-					for (Map.Entry<WeaponCard.WeaponType, RoomCard.RoomType> e: weaponsInRoom.entrySet()){
-						if (e.getValue() == r){
+					for (Map.Entry<WeaponCard.WeaponType, RoomCard.RoomType> e : weaponsInRoom.entrySet()) {
+						if (e.getValue() == r) {
 							System.out.println(e.getKey());
 						}
 					}
@@ -170,12 +216,12 @@ public class Game extends GUI{
 				}
 				playerNumber++;
 			}
-			for (Player p: players){
-				if (!p.hasLost){
+			for (Player p : players) {
+				if (!p.hasLost) {
 					numPlayersLeft++;
 				}
 			}
-			if (numPlayersLeft == 1){
+			if (numPlayersLeft == 1) {
 				System.out.println("Only one player left. Game Over");
 				break gameLoop;
 			}
@@ -197,15 +243,15 @@ public class Game extends GUI{
 
 	public void initialise() {
 		Scanner sc = new Scanner(System.in);
-		System.out.println(" a88888b.  dP                            dP          \r\n" + 
-						   "d8'   `88  88                            88          \r\n" + 
-						   "88         88  dP    dP  .d8888b.  .d888b88  .d8888b. \r\n" + 
-						   "88         88  88    88  88ooood8  88'  `88  88'  `88 \r\n" + 
-						   "Y8.   .88  88  88.  .88  88.  ...  88.  .88  88.  .88 \r\n" + 
-						   " Y88888P'  dP  `88888P'  `88888P'  `88888P8  `88888P'\n");
-		
+		System.out.println(" a88888b.  dP                            dP          \r\n" +
+				"d8'   `88  88                            88          \r\n" +
+				"88         88  dP    dP  .d8888b.  .d888b88  .d8888b. \r\n" +
+				"88         88  88    88  88ooood8  88'  `88  88'  `88 \r\n" +
+				"Y8.   .88  88  88.  .88  88.  ...  88.  .88  88.  .88 \r\n" +
+				" Y88888P'  dP  `88888P'  `88888P'  `88888P8  `88888P'\n");
+
 		System.out.println("*************************************************\n"
-						 + " Welcome to Cluedo! How many people are playing? \n");
+				+ " Welcome to Cluedo! How many people are playing? \n");
 
 		// get the number of players playing
 		int players;
@@ -219,7 +265,7 @@ public class Game extends GUI{
 			unicode = getPrintType(sc);
 		} while (unicode == -1);
 
-		if (unicode == 0){
+		if (unicode == 0) {
 			Board.setPrintMode(0);
 		} else
 			Board.setPrintMode(1);
@@ -240,13 +286,13 @@ public class Game extends GUI{
 			i++;
 		}
 		System.out.println("Ready to shuffle and deal?");
-		
+
 		//waits for the player to say they are ready
 		boolean ready;
 		do {
 			ready = getYesNo(sc);
 		} while (!ready);
-		
+
 		//deal cards and displays information to the players
 		dealDeck();
 
@@ -260,22 +306,23 @@ public class Game extends GUI{
 		} catch (BoardFormatException e) {
 			System.out.println("Oops!\n" + e.getCause());
 		}
+		drawBoard(boardGraphics.getGraphics());
 
 		List<WeaponCard.WeaponType> weapons = new ArrayList<>(Arrays.asList(WeaponCard.WeaponType.values()));
 		List<RoomCard.RoomType> rooms = new ArrayList<>(Arrays.asList(RoomCard.RoomType.values()));
 		Collections.shuffle(rooms);
 		int roomToPut = 0;
-		for (WeaponCard.WeaponType w: weapons){
+		for (WeaponCard.WeaponType w : weapons) {
 			weaponsInRoom.put(w, rooms.get(roomToPut));
 			roomToPut++;
 		}
 
-		for (Map.Entry<WeaponCard.WeaponType, RoomCard.RoomType> e: weaponsInRoom.entrySet()){
+		for (Map.Entry<WeaponCard.WeaponType, RoomCard.RoomType> e : weaponsInRoom.entrySet()) {
 			System.out.println("The weapon " + e.getKey() + " is in the room " + e.getValue());
 		}
 
 		System.out.println("Everything is ready! Ready to start?");
-		
+
 		//waits for the player to say they are ready
 		ready = false;
 		do {
@@ -285,7 +332,7 @@ public class Game extends GUI{
 
 	/**
 	 * Helper method to get the number of players, and handles input errors
-	 * 
+	 *
 	 * @param sc the scanner which reads in from the System.in standard input
 	 * @return the number of people playing or -1 if there is a error
 	 */
@@ -316,6 +363,7 @@ public class Game extends GUI{
 
 	/**
 	 * Utility method to get printing type from user
+	 *
 	 * @param sc the System.in scanner
 	 * @return the value corresponding to unicode or ascii printing
 	 */
@@ -332,8 +380,7 @@ public class Game extends GUI{
 				}
 				if (input.equals("n")) {
 					return 1;
-				}
-				else {
+				} else {
 					System.out.println("Please enter either 'y' (yes) or 'n' (no)");
 					return -1;
 				}
@@ -344,9 +391,10 @@ public class Game extends GUI{
 		}
 		return -1;
 	}
-	
+
 	/**
 	 * Gets a yes or no input from the players
+	 *
 	 * @param sc scanner for the standard input stream
 	 * @return true if yes, false if no
 	 */
@@ -363,8 +411,7 @@ public class Game extends GUI{
 				}
 				if (input.equals("n")) {
 					System.out.println("Enter 'y' when you are ready!");
-				}
-				else {
+				} else {
 					System.out.println("Please enter either 'y' (yes) or 'n' (no)");
 				}
 				return false;
@@ -378,16 +425,17 @@ public class Game extends GUI{
 
 	/**
 	 * Gets a input from the player of where to move
+	 *
 	 * @param sc the standard input scanner
 	 * @return the input string
 	 */
-	public static String getInput(Scanner sc){
+	public static String getInput(Scanner sc) {
 		//make sure the player has typed
-		if (sc.hasNext()){
+		if (sc.hasNext()) {
 			String input = sc.nextLine();
 			//check whether the input is vaild
-			for (char c: input.toCharArray()){
-				if (!(c == 'u' || c == 'd' || c == 'l' || c == 'r')){
+			for (char c : input.toCharArray()) {
+				if (!(c == 'u' || c == 'd' || c == 'l' || c == 'r')) {
 					System.out.println("Please enter a combination of 'u' (up), 'd' (down), 'l' (left) or 'r'(right):");
 					return "";
 				}
@@ -399,12 +447,13 @@ public class Game extends GUI{
 
 	/**
 	 * gets a player from a specific playerType
+	 *
 	 * @param p the personType player to find
 	 * @return the player with the given personType, null if not in game
 	 */
-	private Player getPlayerFromType(PersonCard.PersonType p){
-		for (Player player: players){
-			if (player.personType == p){
+	private Player getPlayerFromType(PersonCard.PersonType p) {
+		for (Player player : players) {
+			if (player.personType == p) {
 				return player;
 			}
 		}

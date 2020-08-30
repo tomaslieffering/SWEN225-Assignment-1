@@ -27,16 +27,17 @@ public class RoomCard implements Card {
 		}
 		return roomCards;
 	}
-	
-	@Override
-	public String toString() {
-		return this.roomType.toString();
-	}
 
+	@Override
 	public void draw(Graphics g, int xPos, int yPos){
 		g.setFont(new Font("Montserrat", Font.BOLD, 10));
 		g.drawRoundRect(xPos, yPos, 130, 180, 20, 20);
 		g.drawString(this.roomType.toString(), xPos + 10, yPos + 50);
+	}
+	
+	@Override
+	public String toString() {
+		return this.roomType.toString();
 	}
 
 	public RoomCard.RoomType getType() {

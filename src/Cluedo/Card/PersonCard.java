@@ -28,16 +28,17 @@ public class PersonCard implements Card {
 		}
 		return personCards;
 	}
-	
-	@Override
-	public String toString() {
-		return this.personType.toString();
-	}
 
+	@Override
 	public void draw(Graphics g, int xPos, int yPos){
 		g.setFont(new Font("Montserrat", Font.BOLD, 10));
 		g.drawRoundRect(xPos, yPos, 130, 180, 20, 20);
 		g.drawString(this.personType.toString(), xPos + 10, yPos + 50);
+	}
+	
+	@Override
+	public String toString() {
+		return this.personType.toString();
 	}
 
 	public PersonType getType() {

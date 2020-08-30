@@ -2,6 +2,8 @@ package Cluedo;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public abstract class GUI {
 
@@ -17,6 +19,8 @@ public abstract class GUI {
 
     protected abstract void drawBoard(Graphics g);
 
+    protected abstract void doMouseMoved(MouseEvent e);
+
     protected abstract void drawCards(Graphics g);
 
     protected abstract void drawDice(Graphics g);
@@ -25,7 +29,13 @@ public abstract class GUI {
 
     private void setupControls() {}
 
-    private void setupBoardGraphics() {}
+    private void setupBoardGraphics() {
+        boardGraphics.addMouseMotionListener(new MouseAdapter() {
+            public void mouseMoved(MouseEvent e) {
+                doMouseMoved(e);
+            }
+        });
+    }
 
     private void setupCardGraphics() {}
 
