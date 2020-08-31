@@ -151,7 +151,7 @@ public class Game extends GUI{
 					continue;
 				}
 				System.out.println(board);
-				System.out.println("Player " + playerNumber + "'s turn! (" + p.personType.toString() + ") Rolling dice...");
+				//System.out.println("Player " + playerNumber + "'s turn! (" + p.personType.toString() + ") Rolling dice...");
 				textArea.append(p.personType.toString() +"'s turn!\n");
 				diceNumber1 = Turn.rollDice();
 				diceNumber2 = Turn.rollDice();
@@ -175,14 +175,14 @@ public class Game extends GUI{
 				RoomCard.RoomType r = board.getPlayerRoom(p);
 				Turn t = new Turn(players);
 				if (r != null) {
-					textArea.append("You have entered the " + r.toString());
-					System.out.println("The weapons in this room are: ");
+					textArea.append("You have entered the " + r.toString()+".\n");
+					textArea.append("The weapons in this room are: \n");
 					for (Map.Entry<WeaponCard.WeaponType, RoomCard.RoomType> e: weaponsInRoom.entrySet()){
 						if (e.getValue() == r){
 							System.out.println(e.getKey());
 						}
 					}
-					textArea.append("Would you like to make a suggestion?");
+					textArea.append("Would you like to make a suggestion?\n");
 					boolean suggest = yesOrNo();
 					if (suggest) {
 						Suggestion suggestion = t.makeSuggestion(r, false, this);
@@ -195,17 +195,24 @@ public class Game extends GUI{
 						}
 						t.disproveSuggestion(p, suggestion, this);
 					}
-						textArea.append("Would you now like to make an accusation? This is will be your final guess");
+						textArea.append("Would you now like to make an accusation?\n" 
+					                    + " This is will be your final guess\n");
 						boolean accuse = yesOrNo();
 						if (accuse) {
 							Suggestion accusation = t.makeSuggestion(r, true, this);
 							boolean win = t.accusationCheck(p, accusation, envelope);
 							clearSelections();
 							if (win) {
+								textArea.setText("");
+								textArea.append("*************************************************\n"
+						                +"CLUEDO\n"
+										+"*************************************************\n");
 								System.out.println("Player " + playerNumber + " has solved the murder, and wins the game!");
+								textArea.append(p.personType.toString()+" wins!!\n");
 								break gameLoop;
 							} else {
 								System.out.println("Player " + playerNumber + " has guessed incorrectly. They are now out of the game.");
+								textArea.append(p.personType.toString()+" is out of the game\n");
 								p.hasLost = true;
 								board.killPlayer(p);
 							}
@@ -219,16 +226,23 @@ public class Game extends GUI{
 					numPlayersLeft++;
 				}
 			}
+			textArea.setText("");
+			textArea.append("*************************************************\n"
+	                +"CLUEDO\n"
+					+"*************************************************\n");
 			if (numPlayersLeft == 1){
-				System.out.println("Only one player left. Game Over");
+				//System.out.println("Only one player left. Game Over");
+				textArea.append("Game Over\n");
 				break gameLoop;
 			}
-			System.out.println("Round " + roundNumber + " finished! Ready for the next round?");
+			//System.out.println("Round " + roundNumber + " finished! Ready for the next round?\n");
+			textArea.append("Round " + roundNumber + " finished!\n");
 			//wait for the players to be ready for the next round
 			ready = false;
 			do {
 				ready = doReady();
-			} while (!ready);
+			}
+			while (!ready);
 			this.ready.setVisible(false);
 			roundNumber++;
 		}
