@@ -156,7 +156,7 @@ public class Game extends GUI{
 				diceNumber1 = Turn.rollDice();
 				diceNumber2 = Turn.rollDice();
 				drawDice(cardGraphics.getGraphics());
-				textArea.append("You have to take " + (diceNumber1 + diceNumber2) + " moves. What do you want to do? \n");
+				textArea.append("You have to take " + (diceNumber1 + diceNumber2) + " moves. What do you want to do?");
 
 				//get input from player
 				left.setVisible(true);
@@ -179,7 +179,7 @@ public class Game extends GUI{
 					textArea.append("The weapons in this room are: \n");
 					for (Map.Entry<WeaponCard.WeaponType, RoomCard.RoomType> e: weaponsInRoom.entrySet()){
 						if (e.getValue() == r){
-							System.out.println(e.getKey());
+							textArea.append(e.getKey()+"\n");
 						}
 					}
 					textArea.append("Would you like to make a suggestion?\n");
@@ -207,11 +207,13 @@ public class Game extends GUI{
 								textArea.append("*************************************************\n"
 						                +"CLUEDO\n"
 										+"*************************************************\n");
-								textArea.append("Player " + playerNumber + " has solved the murder, and wins the game! \n");
-								textArea.append(p.personType.toString()+" wins!!\n");
+								//System.out.println("Player " + playerNumber + " has solved the murder, and wins the game!");
+								textArea.append(p.personType.toString()+" has solved the murder \n"
+										        + " wins!!\n");
 								break gameLoop;
 							} else {
-								textArea.append("Player " + playerNumber + " has guessed incorrectly. They are now out of the game. \n");
+								System.out.println("Player " + playerNumber + " has guessed incorrectly. They are now out of the game.");
+								textArea.append(p.personType.toString()+" is out of the game\n");
 								p.hasLost = true;
 								board.killPlayer(p);
 							}
@@ -273,52 +275,52 @@ public class Game extends GUI{
 				         + "How many people are playing?\n");
 
 		// get the number of players playing
-		int players;
+				int players;
 
-		do {
-			players = getPlayerNumbers(); //GUI method that allows user to click buttons
-		} while (players == -1);
+				do {
+					players = getPlayerNumbers(); //GUI method that allows user to click buttons
+				} while (players == -1);
 
-		final String[] names = new String[players];
-		int[] i = {0};
-		JTextField name = new JTextField(10);
-		controls.add(name);
-		layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, name, 0, SpringLayout.HORIZONTAL_CENTER, controls);
-		layout.putConstraint(SpringLayout.NORTH, name, 20, SpringLayout.NORTH, controls);
-		name.setPreferredSize(new Dimension(10, 20));
+				final String[] names = new String[players];
+				int[] i = {0};
+				JTextField name = new JTextField(10);
+				controls.add(name);
+				layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, name, 0, SpringLayout.HORIZONTAL_CENTER, controls);
+				layout.putConstraint(SpringLayout.NORTH, name, 20, SpringLayout.NORTH, controls);
+				name.setPreferredSize(new Dimension(10, 20));
 
-		int finalPlayers = players;
-		boolean[] done = {false};
-		boolean first = true;
-		int prevPlayer = -1;
-		while (!done[0]){
-			if (prevPlayer != i[0] && i[0] < finalPlayers) {
-				textArea.append("Enter player " + (i[0] + 1) + "'s name on the right. \n");
-				prevPlayer++;
-			}
-			ActionListener listen = new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				names[i[0]] = name.getText();
-				i[0]++;
-				name.selectAll();
-				if (i[0] == finalPlayers) {
-					done[0] = true;
+				int finalPlayers = players;
+				boolean[] done = {false};
+				boolean first = true;
+				int prevPlayer = -1;
+				while (!done[0]){
+					if (prevPlayer != i[0] && i[0] < finalPlayers) {
+						textArea.append("Enter player " + (i[0] + 1) + "'s name on the right. \n");
+						prevPlayer++;
+					}
+					ActionListener listen = new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						names[i[0]] = name.getText();
+						i[0]++;
+						name.selectAll();
+						if (i[0] == finalPlayers) {
+							done[0] = true;
+						}
+					}
+				};
+					if (first) {
+						name.addActionListener(listen);
+						first = false;
+					}
 				}
-			}
-		};
-			if (first) {
-				name.addActionListener(listen);
-				first = false;
-			}
-		}
-		//name.removeActionListener(listen);
-		name.setVisible(false);
-		int namesPrinted = 1;
-		for (String n : names){
-			textArea.append(n + " is Player " + namesPrinted + ". \n");
-			namesPrinted++;
-		}
+				//name.removeActionListener(listen);
+				name.setVisible(false);
+				int namesPrinted = 1;
+				for (String n : names){
+					textArea.append(n + " is Player " + namesPrinted + ". \n");
+					namesPrinted++;
+				}
 
 		//let players select characters
 		int index = 1;
@@ -367,12 +369,11 @@ public class Game extends GUI{
 			weaponsInRoom.put(w, rooms.get(roomToPut));
 			roomToPut++;
 		}
-
-		/*
+/*
 		for (Map.Entry<WeaponCard.WeaponType, RoomCard.RoomType> e: weaponsInRoom.entrySet()){
-			textArea.append("The weapon " + e.getKey() + " is in the room " + e.getValue() + "\n");
-		}*/
- 
+			System.out.println("The weapon " + e.getKey() + " is in the room " + e.getValue());
+		}
+ */
 		textArea.append("Everything is ready! Ready to start?\n");
 		
 		//waits for the player to say they are ready
