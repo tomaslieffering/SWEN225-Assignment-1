@@ -1,6 +1,5 @@
 package Cluedo;
 
-import Cluedo.Board.RoomTile;
 import Cluedo.Board.WallTile;
 import Cluedo.Card.Card;
 import Cluedo.Card.PersonCard;
@@ -9,10 +8,8 @@ import Cluedo.Card.WeaponCard;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 public class Turn {
     private final List<Player> players;
@@ -61,17 +58,17 @@ public class Turn {
      * @param p - player who made the suggestion
      * @param suggestion the suggestion that has been suggested
      */
-    public Card disproveSuggestion(Player p, Suggestion suggestion, Game game){
+    public void disproveSuggestion(Player p, Suggestion suggestion, Game game){
         System.out.println("A suggestion has been made. Does anyone have evidence to the contrary?");
         int originalPlayer = players.indexOf(p), playerNumber = players.indexOf(p), index = 0;
         boolean round = false, found = false;
-        Card card = null;
+        Card card;
         while (!round && !found) { //until all players have been asked or card has been found
             if (playerNumber < players.size()) {
                 if (!(players.get(playerNumber).equals(p))) {
                     System.out.println("Checking with player " + (playerNumber + 1) + "...");
                     Player next = players.get(playerNumber);
-                    ArrayList<Card> cards = new ArrayList<Card>();
+                    ArrayList<Card> cards = new ArrayList<>();
                     List<Card> plHand = next.hand;
                     for (Card c : plHand) {
                         if (c.toString().equals(suggestion.person.toString())) {
@@ -90,8 +87,8 @@ public class Turn {
                         game.textArea.append(" I have evidence against " + card.toString() + "\n");
                     } else if (cards.size() >= 2) {
                         found = true;
-                        game.textArea.append("Player " + playerNumber + " you have more than one thing that can refute, what do you want to choose?");
-                        card = chooseCard(playerNumber, cards, game);
+                        game.textArea.append("Player " + (playerNumber + 1) + " you have more than one thing that can refute, what do you want to choose?\n");
+                        card = chooseCard(cards, game);
                         game.textArea.append("Player " + (playerNumber + 1) + " (" + players.get(playerNumber).personType.toString() + ")\n");
                         game.textArea.append(" whispers to Player " + (originalPlayer + 1) + " (" + players.get(originalPlayer).personType.toString() + ")\n");
                         game.textArea.append(" I have evidence against " + card.toString() + "\n");
@@ -108,17 +105,15 @@ public class Turn {
                 round = true;
             }
         }
-        return card;
     }
 
     /**
      * After an accusation has been made, check if the player wins or loses the game
-     * @param p the player who made the accusation
      * @param suggestion the suggestion the accusation is based of
      * @param envelope the envelope with the actual murder circumstance
      * @return whether the accusation was correct
      */
-    public boolean accusationCheck(Player p, Suggestion suggestion, Set<Card> envelope){
+    public boolean accusationCheck(Suggestion suggestion, Set<Card> envelope){
         int found = 0;
         for (Card c : envelope){
             if (c.toString().equals(suggestion.person.toString())){
@@ -129,11 +124,7 @@ public class Turn {
                 found++;
             }
         }
-        if (found == 3){
-            return true;
-        } else {
-            return false;
-        }
+        return found == 3;
     }
 
     public Suggestion makeSuggestion(RoomCard.RoomType r, boolean accusation, Game g){
@@ -144,6 +135,9 @@ public class Turn {
         for (JButton button : g.characters.values()){
             button.setVisible(true);
         }
+        for (JButton button : g.weapons.values()){
+            button.setVisible(true);
+        }
         for (JButton button : g.rooms.values()){
             button.setVisible(true);
         }
@@ -151,34 +145,27 @@ public class Turn {
             room[0] = r;
             g.rooms.get(r).setBackground(new Color(0x75525D));
         }
-        for (JButton button : g.weapons.values()){
-            button.setVisible(true);
-        }
         while (pers[0] == null) {
             for (PersonCard.PersonType pt : g.characters.keySet()) {
                 JButton button = g.characters.get(pt);
-                button.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        for (JButton b : g.characters.values()){
-                            b.setBackground(new Color(0x1f1d1d));
-                        }
-                        pers[0] = pt;
-                        button.setBackground(new Color(0x75525D));
+                button.addActionListener(e -> {
+                    for (JButton b : g.characters.values()){
+                        b.setBackground(new Color(0x1f1d1d));
                     }
+                    pers[0] = pt;
+                    button.setBackground(new Color(0x75525D));
                 });
             }
         }
         while (weap[0] == null) {
             for (WeaponCard.WeaponType wt : g.weapons.keySet()) {
                 JButton button = g.weapons.get(wt);
-                button.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        for (JButton b : g.weapons.values()){
-                            b.setBackground(new Color(0x1f1d1d));
-                        }
-                        weap[0] = wt;
-                        button.setBackground(new Color(0x75525D));
+                button.addActionListener(e -> {
+                    for (JButton b : g.weapons.values()){
+                        b.setBackground(new Color(0x1f1d1d));
                     }
+                    weap[0] = wt;
+                    button.setBackground(new Color(0x75525D));
                 });
             }
         }
@@ -186,23 +173,20 @@ public class Turn {
             while (room[0] == null) {
                 for (RoomCard.RoomType rt : g.rooms.keySet()) {
                     JButton button = g.rooms.get(rt);
-                    button.addActionListener(new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
-                            for (JButton b : g.rooms.values()){
-                                b.setBackground(new Color(0x1f1d1d));
-                            }
-                            room[0] = rt;
-                            button.setBackground(new Color(0x75525D));
+                    button.addActionListener(e -> {
+                        for (JButton b : g.rooms.values()){
+                            b.setBackground(new Color(0x1f1d1d));
                         }
+                        room[0] = rt;
+                        button.setBackground(new Color(0x75525D));
                     });
                 }
             }
         }
-        Suggestion suggestion = new Suggestion(pers[0], room[0], weap[0]);
-        return suggestion;
+        return new Suggestion(pers[0], room[0], weap[0]);
     }
 
-    public Card chooseCard(int playerNumber, ArrayList<Card> cards, Game game){
+    public Card chooseCard(ArrayList<Card> cards, Game game){
         Card[] chosen = {null};
         Map<Card, JButton> selections = new HashMap<>();
         for (Card c : cards){
@@ -214,10 +198,7 @@ public class Turn {
             card.setFont(new Font("Montserrat", Font.BOLD, 15));
             card.setBorderPainted(false);
         }
-        ArrayList<JButton> buttons = new ArrayList<>();
-        for (JButton b : selections.values()){
-            buttons.add(b);
-        }
+        ArrayList<JButton> buttons = new ArrayList<>(selections.values());
         if (buttons.size() == 2) {
             game.layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, buttons.get(0), 0, SpringLayout.HORIZONTAL_CENTER, game.controls);
             game.layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, buttons.get(1), 0, SpringLayout.HORIZONTAL_CENTER, game.controls);
@@ -234,11 +215,7 @@ public class Turn {
         while (chosen[0] == null) {
             for (Card c : selections.keySet()) {
                 JButton button = selections.get(c);
-                button.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        chosen[0] = c;
-                    }
-                });
+                button.addActionListener(e -> chosen[0] = c);
             }
         }
         for (JButton b : selections.values()){

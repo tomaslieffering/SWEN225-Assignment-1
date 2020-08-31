@@ -10,7 +10,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.ActionEvent;
 import java.util.*;
 import java.util.List;
 
@@ -38,7 +37,7 @@ public abstract class GUI {
     protected SpringLayout layout = new SpringLayout();
 
     public GUI() {
-        initialize();
+        initialiseGUI();
     }
 
     protected abstract void drawBoard(Graphics g);
@@ -48,6 +47,8 @@ public abstract class GUI {
     protected abstract void drawCards(Graphics g);
 
     protected abstract void drawDice(Graphics g);
+
+    public abstract void initialise();
 
     private void setupTextArea() {
         textArea.setBackground(WallTile.wallColor);
@@ -83,7 +84,6 @@ public abstract class GUI {
         layout.putConstraint(SpringLayout.EAST, left, 0, SpringLayout.WEST, down);
 
 
-        //todo input number of players --> make pop-up?
         JButton three = new JButton("3");
         JButton four = new JButton("4");
         JButton five = new JButton("5");
@@ -106,7 +106,6 @@ public abstract class GUI {
         allButtons.add(five);
         allButtons.add(six);
 
-        //Todo yes/no selection --> make pop-up?
         yes = new JButton("Yes");
         no = new JButton("No");
         ready = new JButton("Yes");
@@ -162,7 +161,7 @@ public abstract class GUI {
 
         int index = 0;
         for (JButton button : suggestButtons){
-            if (index == 6 || index == 13){
+            if (index == 6 || index == 12){
                 pad += gap;
             }
             button.setPreferredSize(new Dimension(200, 20));
@@ -193,16 +192,10 @@ public abstract class GUI {
     private void setupCardGraphics() {}
 
 
-    private void initialize(){
+    private void initialiseGUI(){
         window = new JFrame();
         window.setResizable(false);
-        menuBar = new JMenuBar();
-        JMenu menu;
-        menu=new JMenu("Cluedo");
-        menuBar.add(menu);
-        window.setJMenuBar(menuBar);
-        exit = new JMenuItem("Exit game");
-        menuBar.add(exit);
+
         window.setSize(400,400);
         window.setLayout(null);
         window.setVisible(true);
@@ -242,9 +235,5 @@ public abstract class GUI {
         window.add(cardGraphics, BorderLayout.SOUTH);
         window.pack();
         window.setVisible(true);
-    }
-
-    public static void main(String[] args) {
-        //new GUI();
     }
 }

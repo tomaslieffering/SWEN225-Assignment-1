@@ -8,7 +8,6 @@ import Cluedo.Card.WeaponCard;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.util.*;
@@ -25,6 +24,9 @@ public class Game extends GUI{
 	int diceNumber2 = 0;
 
 	RoomCard.RoomType hoveredRoom = null;
+	String currentMove = "";
+	int currentMoveCount = 0;
+
 
 	@Override
 	protected void drawBoard(Graphics g) {
@@ -33,6 +35,8 @@ public class Game extends GUI{
 
 		if (board != null) {
 			board.draw(g);
+			if(currentPlayer != null)
+				board.drawMove(currentMove, currentMoveCount, currentPlayer, g);
 		}
 		if (hoveredRoom != null) {
 			g.setColor(new Color(0x000000));
@@ -87,44 +91,38 @@ public class Game extends GUI{
 		g.drawRoundRect(xPos, yPos, 50, 50, 10, 10);
 		g.setColor(Color.BLACK);
 		if (value == 1) {
-			g.drawOval(xPos + 22, yPos + 22, 6, 6);
+			g.fillOval(xPos + 22, yPos + 22, 6, 6);
 		}
 		if (value == 2) {
-			g.drawOval(xPos + 39, yPos + 39, 6, 6);
-			g.drawOval(xPos + 5, yPos + 5, 6, 6);
+			g.fillOval(xPos + 39, yPos + 39, 6, 6);
+			g.fillOval(xPos + 5, yPos + 5, 6, 6);
 		}
 		if (value == 3) {
-			g.drawOval(xPos + 39, yPos + 39, 6, 6);
-			g.drawOval(xPos + 5, yPos + 5, 6, 6);
-			g.drawOval(xPos + 22, yPos + 22, 6, 6);
+			g.fillOval(xPos + 39, yPos + 39, 6, 6);
+			g.fillOval(xPos + 5, yPos + 5, 6, 6);
+			g.fillOval(xPos + 22, yPos + 22, 6, 6);
 		}
 		if (value == 4) {
-			g.drawOval(xPos + 39, yPos + 39, 6, 6);
-			g.drawOval(xPos + 5, yPos + 5, 6, 6);
-			g.drawOval(xPos + 5, yPos + 39, 6, 6);
-			g.drawOval(xPos + 39, yPos + 5, 6, 6);
+			g.fillOval(xPos + 39, yPos + 39, 6, 6);
+			g.fillOval(xPos + 5, yPos + 5, 6, 6);
+			g.fillOval(xPos + 5, yPos + 39, 6, 6);
+			g.fillOval(xPos + 39, yPos + 5, 6, 6);
 		}
 		if (value == 5) {
-			g.drawOval(xPos + 39, yPos + 39, 6, 6);
-			g.drawOval(xPos + 5, yPos + 5, 6, 6);
-			g.drawOval(xPos + 5, yPos + 39, 6, 6);
-			g.drawOval(xPos + 39, yPos + 5, 6, 6);
-			g.drawOval(xPos + 22, yPos + 22, 6, 6);
+			g.fillOval(xPos + 39, yPos + 39, 6, 6);
+			g.fillOval(xPos + 5, yPos + 5, 6, 6);
+			g.fillOval(xPos + 5, yPos + 39, 6, 6);
+			g.fillOval(xPos + 39, yPos + 5, 6, 6);
+			g.fillOval(xPos + 22, yPos + 22, 6, 6);
 		}
 		if (value == 6) {
-			g.drawOval(xPos + 39, yPos + 39, 6, 6);
-			g.drawOval(xPos + 5, yPos + 5, 6, 6);
-			g.drawOval(xPos + 5, yPos + 39, 6, 6);
-			g.drawOval(xPos + 39, yPos + 5, 6, 6);
-			g.drawOval(xPos + 5, yPos + 22, 6, 6);
-			g.drawOval(xPos + 39, yPos + 22, 6, 6);
+			g.fillOval(xPos + 39, yPos + 39, 6, 6);
+			g.fillOval(xPos + 5, yPos + 5, 6, 6);
+			g.fillOval(xPos + 5, yPos + 39, 6, 6);
+			g.fillOval(xPos + 39, yPos + 5, 6, 6);
+			g.fillOval(xPos + 5, yPos + 22, 6, 6);
+			g.fillOval(xPos + 39, yPos + 22, 6, 6);
 		}
-	}
-
-	public static void main(String[] args) {
-		Game game = new Game();
-		game.initialise();
-		game.play();
 	}
 
 	/**
@@ -145,6 +143,7 @@ public class Game extends GUI{
 					readySelect.setResizable(false);
 					readySelect.setBackground(WallTile.wallColor);
 					readySelect.setSize(new Dimension(280, 150));
+					readySelect.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 
 					JPanel readySelectPanel = new JPanel();
 					readySelectPanel.setLayout(new GridLayout(2, 1));
@@ -154,7 +153,7 @@ public class Game extends GUI{
 					JLabel readyLabel = new JLabel("Player " + playerNumber + "'s turn. Are you ready?");
 					readyLabel.setFont(new Font("Montserrat", Font.PLAIN, 15));
 					readyLabel.setForeground(RoomTile.lightRoomTile);
-					readyLabel.setHorizontalAlignment(0);
+					readyLabel.setHorizontalAlignment(SwingConstants.CENTER);
 					readyLabel.setVisible(true);
 					readySelectPanel.add(readyLabel);
 
@@ -162,7 +161,6 @@ public class Game extends GUI{
 					readySelect.add(readySelectPanel);
 					readySelect.setVisible(true);
 
-					ready = false;
 					do {
 						ready = doReady();
 					} while (!ready);
@@ -175,7 +173,6 @@ public class Game extends GUI{
 						playerNumber++;
 						continue;
 					}
-					System.out.println(board);
 					textArea.append("Player " + playerNumber + "'s turn! (" + p.personType.toString() + ") Rolling dice...\n");
 					diceNumber1 = Turn.rollDice();
 					diceNumber2 = Turn.rollDice();
@@ -188,8 +185,7 @@ public class Game extends GUI{
 					down.setVisible(true);
 					up.setVisible(true);
 
-					int movesTaken = 0;
-					doMoves(movesTaken, diceNumber1 + diceNumber2, p, boardGraphics.getGraphics());
+					doMoves(diceNumber1 + diceNumber2, p, boardGraphics.getGraphics());
 
 					left.setVisible(false);
 					right.setVisible(false);
@@ -217,13 +213,14 @@ public class Game extends GUI{
 							if (inSuggestion != null) {
 								board.movePlayerToPlayer(p, inSuggestion);
 							}
+							boardGraphics.updateUI();
 							t.disproveSuggestion(p, suggestion, this);
 						}
 						textArea.append("Would you now like to make an accusation? This is will be your final guess\n");
 						boolean accuse = yesOrNo();
 						if (accuse) {
 							Suggestion accusation = t.makeSuggestion(r, true, this);
-							boolean win = t.accusationCheck(p, accusation, envelope);
+							boolean win = t.accusationCheck(accusation, envelope);
 							clearSelections();
 							if (win) {
 								textArea.append("Player " + playerNumber + " has solved the murder, and wins the game!\n");
@@ -246,11 +243,8 @@ public class Game extends GUI{
 				}
 			}
 			if (numPlayersLeft == 1){
-
-				break gameLoop;
-
+				break;
 			}
-			System.out.println("Round " + roundNumber + " finished! Ready for the next round?");
 			//wait for the players to be ready for the next round
 			roundNumber++;
 		}
@@ -279,15 +273,7 @@ public class Game extends GUI{
 	 */
 
 	public void initialise() {
-		exit.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				int quitting = JOptionPane.showConfirmDialog(null, "Are you sure you want to quit?", "Warning", JOptionPane.YES_NO_OPTION);
-				if (quitting == JOptionPane.YES_OPTION){
-					window.dispose();
-				}
-			}
-		});
+
 		textArea.setBackground(WallTile.wallColor);
 
 		JDialog start = new JDialog();
@@ -295,6 +281,7 @@ public class Game extends GUI{
 		start.setResizable(false);
 		start.setBackground(WallTile.wallColor);
 		start.setSize(new Dimension(280, 150));
+		start.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 
 		JPanel startComponent = new JPanel();
 		startComponent.setLayout(new GridLayout(2, 1));
@@ -303,7 +290,7 @@ public class Game extends GUI{
 		JLabel startLabel = new JLabel("Welcome to Cluedo! How many are playing?");
 		startLabel.setFont(new Font("Montserrat", Font.PLAIN, 11));
 		startLabel.setForeground(RoomTile.lightRoomTile);
-		startLabel.setHorizontalAlignment(0);
+		startLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		startComponent.add(startLabel);
 
 		JPanel startButtons = new JPanel();
@@ -333,6 +320,7 @@ public class Game extends GUI{
 		playerSelect.setResizable(false);
 		playerSelect.setBackground(WallTile.wallColor);
 		playerSelect.setSize(new Dimension(280, 300));
+		playerSelect.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 
 		JPanel playerSelectPanel = new JPanel();
 		playerSelectPanel.setLayout(new GridLayout(2, 1));
@@ -343,7 +331,7 @@ public class Game extends GUI{
 		JLabel playerSelectLabel = new JLabel("");
 		playerSelectLabel.setFont(new Font("Montserrat", Font.PLAIN, 15));
 		playerSelectLabel.setForeground(RoomTile.lightRoomTile);
-		playerSelectLabel.setHorizontalAlignment(0);
+		playerSelectLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		playerSelectLabel.setVisible(true);
 		playerSelectPanel.add(playerSelectLabel);
 
@@ -375,6 +363,7 @@ public class Game extends GUI{
 		readySelect.setResizable(false);
 		readySelect.setBackground(WallTile.wallColor);
 		readySelect.setSize(new Dimension(280, 150));
+		readySelect.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 
 		JPanel readySelectPanel = new JPanel();
 		readySelectPanel.setLayout(new GridLayout(2, 1));
@@ -384,7 +373,7 @@ public class Game extends GUI{
 		JLabel readyLabel = new JLabel("Ready to shuffle, deal and play?");
 		readyLabel.setFont(new Font("Montserrat", Font.PLAIN, 15));
 		readyLabel.setForeground(RoomTile.lightRoomTile);
-		readyLabel.setHorizontalAlignment(0);
+		readyLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		readyLabel.setVisible(true);
 		readySelectPanel.add(readyLabel);
 
@@ -423,7 +412,6 @@ public class Game extends GUI{
 		for (Map.Entry<WeaponCard.WeaponType, RoomCard.RoomType> e: weaponsInRoom.entrySet()){
 			textArea.append("The weapon " + e.getKey() + " is in the room " + e.getValue() + "\n");
 		}
-
 	}
 
 	public PersonCard.PersonType chooseChar(){
@@ -491,75 +479,93 @@ public class Game extends GUI{
 		while (!bReady[0]) {
 			ready.addActionListener(e -> bReady[0] = true);
 		}
-		return bReady[0];
+		return true;
 	}
 
 	/**
-	 *
-	 * @param movesTaken the number of moves taken so far
-	 * @param diceNumber the number rolled
+	 *  @param diceNumber the number rolled
 	 * @param p player
 	 */
-	public void doMoves(int movesTaken, int diceNumber, Player p, Graphics g){
-		boolean first = true;
-		while (movesTaken < diceNumber) {
-			ActionListener listener = e -> {
-				JButton button = (JButton) e.getSource();
-				if (button == left) {
-					mLeft = true;
-				}
-				if (button == right) {
-					mRight = true;
-				}
-				if (button == up) {
-					mUp = true;
-				}
-				if (button == down) {
-					mDown = true;
-				}
-			};
+	public void doMoves(int diceNumber, Player p, Graphics g){
+		StringBuilder moveString;
+		int movesTaken;
+		do {
+			boardGraphics.updateUI();
+			movesTaken = 0;
+			boolean first = true;
+			moveString = new StringBuilder();
+			while (movesTaken < diceNumber) {
+				ActionListener listener = e -> {
+					JButton button = (JButton) e.getSource();
+					if (button == left) {
+						mLeft = true;
+					}
+					if (button == right) {
+						mRight = true;
+					}
+					if (button == up) {
+						mUp = true;
+					}
+					if (button == down) {
+						mDown = true;
+					}
+				};
 
-			if (first) {
-				left.addActionListener(listener);
-				right.addActionListener(listener);
-				down.addActionListener(listener);
-				up.addActionListener(listener);
-			}
-
-			if (mLeft) {
-				if (board.movePlayer("l", 2, p)) {
-					drawBoard(g);
-					movesTaken++;
+				if (first) {
+					left.addActionListener(listener);
+					right.addActionListener(listener);
+					down.addActionListener(listener);
+					up.addActionListener(listener);
 				}
-				mLeft = false;
-			} else if (mRight) {
-				if (board.movePlayer("r", 2, p)) {
-					drawBoard(g);
-					movesTaken++;
+				//boardGraphics.updateUI();
+				int result = -1;
+				if (mLeft) {
+					if ((result = board.drawMove(moveString + "l", movesTaken + 1, p, g)) > 0) {
+						movesTaken++;
+						moveString.append("l");
+						currentMove = moveString.toString();
+						currentMoveCount = movesTaken;
+					}
+					mLeft = false;
+				} else if (mRight) {
+					if ((result = board.drawMove(moveString + "r", movesTaken + 1, p, g)) > 0) {
+						movesTaken++;
+						moveString.append("r");
+						currentMove = moveString.toString();
+						currentMoveCount = movesTaken;
+					}
+					mRight = false;
+				} else if (mUp) {
+					if ((result = board.drawMove(moveString + "u", movesTaken + 1, p, g)) > 0) {
+						movesTaken++;
+						moveString.append("u");
+						currentMove = moveString.toString();
+						currentMoveCount = movesTaken;
+					}
+					mUp = false;
+				} else if (mDown) {
+					if ((result = board.drawMove(moveString + "d", movesTaken + 1, p, g)) > 0) {
+						movesTaken++;
+						moveString.append("d");
+						currentMove = moveString.toString();
+						currentMoveCount = movesTaken;
+					}
+					mDown = false;
 				}
-				mRight = false;
-			} else if (mUp) {
-				if (board.movePlayer("u", 2, p)) {
-					drawBoard(g);
-					movesTaken++;
+				if (result == 2)
+					break;
+				first = false;
+				if (movesTaken == diceNumber - 1) { //if last loop
+					left.removeActionListener(listener);
+					right.removeActionListener(listener);
+					up.removeActionListener(listener);
+					down.removeActionListener(listener);
 				}
-				mUp = false;
-			} else if (mDown) {
-				if (board.movePlayer("d", 2, p)) {
-					drawBoard(g);
-					movesTaken++;
-				}
-				mDown = false;
-			}
-			first = false;
-			if (movesTaken == diceNumber - 1){ //if last loop
-				left.removeActionListener(listener);
-				right.removeActionListener(listener);
-				up.removeActionListener(listener);
-				down.removeActionListener(listener);
 			}
 			boardGraphics.updateUI();
-		}
+		} while (!board.movePlayer(moveString.toString(), movesTaken, p));
+		currentMove = "";
+		currentMoveCount = 0;
 	}
 
 	public void clearSelections(){
@@ -631,4 +637,9 @@ public class Game extends GUI{
 		}
 	}
 
+	public static void main(String[] args) {
+		Game game = new Game();
+		game.initialise();
+		game.play();
+	}
 }
