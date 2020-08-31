@@ -1,5 +1,6 @@
 package Cluedo;
 
+import Cluedo.Board.RoomTile;
 import Cluedo.Board.WallTile;
 import Cluedo.Card.PersonCard;
 import Cluedo.Card.RoomCard;
@@ -48,7 +49,9 @@ public abstract class GUI {
 
     protected abstract void drawDice(Graphics g);
 
-    private void setupTextArea() {}
+    private void setupTextArea() {
+        textArea.setBackground(WallTile.wallColor);
+    }
 
     private void setupControls() {
         controls.setLayout(layout);
@@ -78,6 +81,7 @@ public abstract class GUI {
         JButton four = new JButton("4");
         JButton five = new JButton("5");
         JButton six = new JButton("6");
+        three.setBackground(Color.GREEN);
 
         playerNumbers.add(three);
         playerNumbers.add(four);
@@ -123,10 +127,10 @@ public abstract class GUI {
             characters.put(pers, jp);
             //Radio buttons:
             JRadioButton jrp = new JRadioButton(pers.toString(), false);
-            jrp.setBackground(new Color(0x1f1d1d));
+            jrp.setBackground(WallTile.wallColor);
             jrp.setVisible(false);
-            jrp.setForeground(Color.magenta);
-            jrp.setFont(new Font("Dialog", Font.BOLD, 15));
+            jrp.setForeground(RoomTile.lightRoomTile);
+            jrp.setFont(new Font("Montserrat", Font.PLAIN, 11));
             jrp.setBorderPainted(false);
             layout.putConstraint(SpringLayout.NORTH, jrp, radioPadY, SpringLayout.NORTH, controls);
             radioPadY += 30;
@@ -163,12 +167,12 @@ public abstract class GUI {
         }
 
         for (JButton button : allButtons){
-            button.setBackground(new Color(0x1f1d1d));
+            button.setBackground(WallTile.wallColor);
             button.setVisible(false);
             controls.add(button);
-            button.setForeground(Color.magenta);
-            button.setFont(new Font("Dialog", Font.BOLD, 15));
-            button.setBorderPainted(true);
+            button.setForeground(WallTile.lightRoomTile);
+            button.setFont(new Font("Montserrat", Font.PLAIN, 15));
+            button.setBorderPainted(false);
         }
     }
 
@@ -185,13 +189,14 @@ public abstract class GUI {
 
     private void initialize(){
         window = new JFrame();
+        window.setResizable(false);
         menuBar = new JMenuBar();
         JMenu menu;
         menu=new JMenu("Cluedo");
-        exit = new JMenuItem("Exit game");
-        menu.add(exit);
         menuBar.add(menu);
         window.setJMenuBar(menuBar);
+        exit = new JMenuItem("Exit game");
+        menuBar.add(exit);
         window.setSize(400,400);
         window.setLayout(null);
         window.setVisible(true);

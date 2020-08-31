@@ -118,9 +118,6 @@ public class Board {
      *   The graphics pane to output to
      */
     public void draw(Graphics g) {
-        g.setColor(WallTile.wallColor);
-        g.fillRect(0, 0, 500,500);
-
         for(int i = 0; i < board.length; i++) {
             for(int j = 0; j < board[0].length; j++)
                 board[i][j].draw(g, 10 + (j * 20), 10 + (i * 20));
