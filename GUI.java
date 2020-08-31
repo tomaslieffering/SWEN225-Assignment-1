@@ -188,10 +188,10 @@ public abstract class GUI {
         menuBar = new JMenuBar();
         JMenu menu;
         menu=new JMenu("Cluedo");
+        exit = new JMenuItem("Exit game");
+        menu.add(exit);
         menuBar.add(menu);
         window.setJMenuBar(menuBar);
-        exit = new JMenuItem("Exit game");
-        menuBar.add(exit);
         window.setSize(400,400);
         window.setLayout(null);
         window.setVisible(true);
