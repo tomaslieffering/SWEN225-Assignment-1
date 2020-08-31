@@ -60,15 +60,21 @@ public class Turn {
      * @param suggestion the suggestion that has been suggested
      */
     public Card disproveSuggestion(Player p, Suggestion suggestion, Game game){
+        if (game.textArea.getLineCount() > 10){
+            game.textArea.setText("");
+            game.textArea.append("*************************************************\n"
+                    +"CLUEDO\n");
+            game.textArea.append("*************************************************\n");
+        }
         textArea.append("A suggestion has been made.\n"
         		+"Does anyone have evidence to the contrary?\n");
         int originalPlayer = players.indexOf(p), playerNumber = players.indexOf(p), index = 0;
         boolean round = false, found = false;
         Card card = null;
+        game.textArea.append("Each player checks their cards \n");
         while (!round && !found) { //until all players have been asked or card has been found
             if (playerNumber < players.size()) {
                 if (!(players.get(playerNumber).equals(p))) {
-                	textArea.append("Checking with player " + (playerNumber + 1) + "...\n");
                     Player next = players.get(playerNumber);
                     ArrayList<Card> cards = new ArrayList<Card>();
                     List<Card> plHand = next.hand;
@@ -84,17 +90,17 @@ public class Turn {
                     if (cards.size() == 1) {
                         found = true;
                         card = cards.get(0);
-                        textArea.append("Player " + (playerNumber + 1)  + " (" + players.get(playerNumber).personType.toString() + ")");
-                        textArea.append(" whispers to Player " + (originalPlayer + 1) + " (" + players.get(originalPlayer).personType.toString() + "):\n");
-                        textArea.append(" I have evidence against " + card.toString()+"\n");
+                        game.textArea.append("Player " + (playerNumber + 1)  + " (" + players.get(playerNumber).personType.toString() + ")");
+                        game.textArea.append(" whispers to Player " + (originalPlayer + 1) + " (" + players.get(originalPlayer).personType.toString() + "):\n");
+                        game.textArea.append(" I have evidence against " + card.toString()+"\n");
                     } else if (cards.size() >= 2) {
                         found = true;
                         card = chooseCard(playerNumber, cards, game);
-                        textArea.append("Player " + (playerNumber + 1) + " (" + players.get(playerNumber).personType.toString() + ")");
-                        textArea.append(" whispers to Player " + (originalPlayer + 1) + " (" + players.get(originalPlayer).personType.toString() + "):\n");
-                        textArea.append(" I have evidence against " + card.toString()+"\n");
+                        game.textArea.append("Player " + (playerNumber + 1) + " (" + players.get(playerNumber).personType.toString() + ")");
+                        game.textArea.append(" whispers to Player " + (originalPlayer + 1) + " (" + players.get(originalPlayer).personType.toString() + "):\n");
+                        game.textArea.append(" I have evidence against " + card.toString()+"\n");
                     } else {
-                    	textArea.append("Player " + (playerNumber + 1) + " cannot help.\n");
+                        game.textArea.append("Player " + (playerNumber + 1) + " cannot help.\n");
                     }
                 }
                 playerNumber++;
@@ -197,12 +203,24 @@ public class Turn {
             }
         }
         Suggestion suggestion = new Suggestion(pers[0], room[0], weap[0]);
+        if (g.textArea.getLineCount() > 10){
+            g.textArea.setText("");
+            g.textArea.append("*************************************************\n"
+                    +"CLUEDO\n");
+            g.textArea.append("*************************************************\n");
+        }
         return suggestion;
     }
 
     public Card chooseCard(int playerNumber, ArrayList<Card> cards, Game game){
-        System.out.println("Player " + (playerNumber + 1) + ": You have more than one card suitable to refute this suggestion.");
-        System.out.println("Which would you like to choose?");
+        if (game.textArea.getLineCount() > 10){
+            game.textArea.setText("");
+            game.textArea.append("*************************************************\n"
+                    +"CLUEDO\n");
+            game.textArea.append("*************************************************\n");
+        }
+        game.textArea.append("Player " + (playerNumber + 1) + ": You have more than one card suitable to refute this suggestion. \n");
+        game.textArea.append("Which would you like to choose? \n");
         final Card[] chosen = {null};
         Map<Card, JButton> selections = new HashMap<>();
         for (Card c : cards){
