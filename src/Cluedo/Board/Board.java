@@ -118,13 +118,47 @@ public class Board {
      *   The graphics pane to output to
      */
     public void draw(Graphics g) {
-        g.setColor(WallTile.wallColor);
-        g.fillRect(0, 0, 500,500);
-
         for(int i = 0; i < board.length; i++) {
             for(int j = 0; j < board[0].length; j++)
                 board[i][j].draw(g, 10 + (j * 20), 10 + (i * 20));
         }
+    }
+
+    /**
+     * Draws a move onto the board
+     * @param p
+     *   The player to be moved
+     * @param input
+     *   The input string to move the player
+     * @param diceNumber
+     *   The number the player rolled on the dice
+     * @param g
+     *   The graphics pane to output to
+     * @return
+     *   0 if invalid move, 1 if valid move, 2 if valid move into room
+     */
+    public int drawMove(String input, int diceNumber, Player p, Graphics g) {
+        Position endPosition = checkMove(input, diceNumber, p);
+        if(endPosition == null)
+            return 0;
+        Position position = findPlayer(p);
+        draw(g);
+        while (input.length() > 0) {
+            BoardTile.MoveDirection d = parseDirection(input.charAt(0));
+            if(d == null)
+                throw new IllegalStateException("Incorrect char in Board.drawMove()");
+            Position nextPosition = position.move(d);
+            g.setColor(Color.RED);
+            System.out.println("drawing!");
+            g.drawLine((position.getCol() * 20) + 20, (position.getRow() * 20) + 20,
+                    (nextPosition.getCol() * 20) + 20, (nextPosition.getRow() * 20) + 20);
+            input = input.substring(1);
+            position = nextPosition;
+        }
+        g.drawRect((position.getCol() * 20) + 15, (position.getRow() * 20) + 15, 10, 10);
+        if(((RoomTile)getTileAt(endPosition)).getRoom() != null && getPlayerRoom(p) != ((RoomTile)getTileAt(endPosition)).getRoom())
+            return 2;
+        return 1;
     }
 
     /**
@@ -140,6 +174,28 @@ public class Board {
      *   Move is not done if it is invalid
      */
     public boolean movePlayer(String input, int diceNumber, Player p) {
+        Position startPosition = findPlayer(p);
+        Position endPosition = checkMove(input, diceNumber, p);
+        if(endPosition == null)
+            return false;
+        if(((RoomTile) getTileAt(endPosition)).getPlayer() != null)
+            return false;
+        RoomTile.movePlayer((RoomTile)getTileAt(startPosition), (RoomTile)getTileAt(endPosition));
+        return true;
+    }
+
+    /**
+     * Checks whether a specific input is valid
+     * @param p
+     *   The player to be moved
+     * @param input
+     *   The input string to move the player
+     * @param diceNumber
+     *   The number the player rolled on the dice
+     * @return
+     *   The final position of the player, or null if the move is invalid
+     */
+    public Position checkMove(String input, int diceNumber, Player p) {
         Position start = findPlayer(p);
         int moveCount = 0;
         Set<BoardTile> previousTiles = new HashSet<>();
@@ -152,26 +208,26 @@ public class Board {
             //if the input char is wrong
             if (direction == null) {
                 System.out.println("'" + c + "' is not a valid direction!");
-                return false;
+                return null;
             }
 
             //if the location is out of bounds
             if(isOutOfBounds(currentPosition.move(direction))) {
                 System.out.println("You can't move off the board!");
-                return false;
+                return null;
             }
 
             //if the tile cannot be moved to
             if(!getTileAt(currentPosition).canMoveFromHere(direction) ||
                     !getTileAt(currentPosition.move(direction)).canMoveHere(direction)) {
                 System.out.println("You can't move through walls!");
-                return false;
+                return null;
             }
 
             //if the tile has already been moved to
             if(previousTiles.contains(getTileAt(currentPosition.move(direction)))) {
                 System.out.println("You can't retrace your own steps!");
-                return false;
+                return null;
             }
 
             //update position
@@ -179,9 +235,18 @@ public class Board {
             currentPosition = currentPosition.move(direction);
             moveCount++;
         }
-
-        RoomTile.movePlayer((RoomTile)getTileAt(start), (RoomTile)getTileAt(currentPosition));
-        return true;
+        if(moveCount > diceNumber) {
+            System.out.println("You can't use more moves than your roll!");
+            return null;
+        }
+        else if(moveCount < diceNumber) {
+            if(((RoomTile)getTileAt(currentPosition)).getRoom() == startRoom ||
+                    ((RoomTile)getTileAt(currentPosition)).getRoom() == null) {
+                System.out.println("You must use all of your moves if you haven't entered a new room!");
+                return null;
+            }
+        }
+        return currentPosition;
     }
 
     /**

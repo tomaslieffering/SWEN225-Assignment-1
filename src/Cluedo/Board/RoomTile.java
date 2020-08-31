@@ -65,7 +65,7 @@ public class RoomTile implements BoardTile {
 
     @Override
     public boolean canMoveHere(MoveDirection direction) {
-        return player == null;
+        return true;
     }
 
     @Override
