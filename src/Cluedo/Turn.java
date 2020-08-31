@@ -14,7 +14,7 @@ import java.util.List;
 
 public class Turn {
     private final List<Player> players;
-
+    public JTextArea textArea = new JTextArea();
     Turn(List<Player> players) {
         this.players = players;
     }
@@ -60,14 +60,15 @@ public class Turn {
      * @param suggestion the suggestion that has been suggested
      */
     public Card disproveSuggestion(Player p, Suggestion suggestion, Game game){
-        System.out.println("A suggestion has been made. Does anyone have evidence to the contrary?");
+        textArea.append("A suggestion has been made.\n"
+        		+"Does anyone have evidence to the contrary?\n");
         int originalPlayer = players.indexOf(p), playerNumber = players.indexOf(p), index = 0;
         boolean round = false, found = false;
         Card card = null;
         while (!round && !found) { //until all players have been asked or card has been found
             if (playerNumber < players.size()) {
                 if (!(players.get(playerNumber).equals(p))) {
-                    System.out.println("Checking with player " + (playerNumber + 1) + "...");
+                	textArea.append("Checking with player " + (playerNumber + 1) + "...\n");
                     Player next = players.get(playerNumber);
                     ArrayList<Card> cards = new ArrayList<Card>();
                     List<Card> plHand = next.hand;
@@ -83,17 +84,17 @@ public class Turn {
                     if (cards.size() == 1) {
                         found = true;
                         card = cards.get(0);
-                        System.out.println("Player " + (playerNumber + 1)  + " (" + players.get(playerNumber).personType.toString() + ")");
-                        System.out.print(" whispers to Player " + (originalPlayer + 1) + " (" + players.get(originalPlayer).personType.toString() + ")");
-                        System.out.println(" I have evidence against " + card.toString());
+                        textArea.append("Player " + (playerNumber + 1)  + " (" + players.get(playerNumber).personType.toString() + ")");
+                        textArea.append(" whispers to Player " + (originalPlayer + 1) + " (" + players.get(originalPlayer).personType.toString() + "):\n");
+                        textArea.append(" I have evidence against " + card.toString()+"\n");
                     } else if (cards.size() >= 2) {
                         found = true;
                         card = chooseCard(playerNumber, cards, game);
-                        System.out.println("Player " + (playerNumber + 1) + " (" + players.get(playerNumber).personType.toString() + ")");
-                        System.out.print(" whispers to Player " + (originalPlayer + 1) + " (" + players.get(originalPlayer).personType.toString() + ")");
-                        System.out.println(" I have evidence against " + card.toString());
+                        textArea.append("Player " + (playerNumber + 1) + " (" + players.get(playerNumber).personType.toString() + ")");
+                        textArea.append(" whispers to Player " + (originalPlayer + 1) + " (" + players.get(originalPlayer).personType.toString() + "):\n");
+                        textArea.append(" I have evidence against " + card.toString()+"\n");
                     } else {
-                        System.out.println("Player " + (playerNumber + 1) + " cannot help.");
+                    	textArea.append("Player " + (playerNumber + 1) + " cannot help.\n");
                     }
                 }
                 playerNumber++;
