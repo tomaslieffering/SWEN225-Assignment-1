@@ -1,5 +1,6 @@
 package Cluedo;
 
+import Cluedo.Board.RoomTile;
 import Cluedo.Board.WallTile;
 import Cluedo.Card.PersonCard;
 import Cluedo.Card.RoomCard;
@@ -48,15 +49,24 @@ public abstract class GUI {
 
     protected abstract void drawDice(Graphics g);
 
-    private void setupTextArea() {}
+    private void setupTextArea() {
+        textArea.setBackground(WallTile.wallColor);
+        textArea.setFont(new Font("Montserrat", Font.PLAIN, 15));
+        textArea.setForeground(WallTile.lightRoomTile);
+        textArea.setWrapStyleWord(true);
+    }
 
     private void setupControls() {
         controls.setLayout(layout);
 
         left = new JButton("←");
+        left.setBackground(WallTile.darkRoomTile);
         right = new JButton("→");
+        right.setBackground(WallTile.darkRoomTile);
         up = new JButton("↑");
+        up.setBackground(WallTile.darkRoomTile);
         down = new JButton("↓");
+        down.setBackground(WallTile.darkRoomTile);
 
         allButtons.add(left);
         allButtons.add(right);
@@ -99,7 +109,7 @@ public abstract class GUI {
         //Todo yes/no selection --> make pop-up?
         yes = new JButton("Yes");
         no = new JButton("No");
-        ready = new JButton("Ready");
+        ready = new JButton("Yes");
 
         allButtons.add(yes);
         layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, yes, -35, SpringLayout.HORIZONTAL_CENTER, controls);
@@ -123,10 +133,10 @@ public abstract class GUI {
             characters.put(pers, jp);
             //Radio buttons:
             JRadioButton jrp = new JRadioButton(pers.toString(), false);
-            jrp.setBackground(new Color(0x1f1d1d));
+            jrp.setBackground(WallTile.wallColor);
             jrp.setVisible(false);
-            jrp.setForeground(Color.magenta);
-            jrp.setFont(new Font("Dialog", Font.BOLD, 15));
+            jrp.setForeground(RoomTile.lightRoomTile);
+            jrp.setFont(new Font("Montserrat", Font.PLAIN, 11));
             jrp.setBorderPainted(false);
             layout.putConstraint(SpringLayout.NORTH, jrp, radioPadY, SpringLayout.NORTH, controls);
             radioPadY += 30;
@@ -163,12 +173,12 @@ public abstract class GUI {
         }
 
         for (JButton button : allButtons){
-            button.setBackground(new Color(0x1f1d1d));
+            button.setBackground(WallTile.darkRoomTile);
             button.setVisible(false);
             controls.add(button);
-            button.setForeground(Color.magenta);
-            button.setFont(new Font("Dialog", Font.BOLD, 15));
-            button.setBorderPainted(true);
+            button.setForeground(WallTile.wallColor);
+            button.setFont(new Font("Montserrat", Font.PLAIN, 15));
+            button.setBorderPainted(false);
         }
     }
 
@@ -185,13 +195,14 @@ public abstract class GUI {
 
     private void initialize(){
         window = new JFrame();
+        window.setResizable(false);
         menuBar = new JMenuBar();
         JMenu menu;
         menu=new JMenu("Cluedo");
-        exit = new JMenuItem("Exit game");
-        menu.add(exit);
         menuBar.add(menu);
         window.setJMenuBar(menuBar);
+        exit = new JMenuItem("Exit game");
+        menuBar.add(exit);
         window.setSize(400,400);
         window.setLayout(null);
         window.setVisible(true);

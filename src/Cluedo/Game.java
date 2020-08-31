@@ -1,9 +1,6 @@
 package Cluedo;
 
-import Cluedo.Board.Board;
-import Cluedo.Board.BoardFormatException;
-import Cluedo.Board.BoardTile;
-import Cluedo.Board.RoomTile;
+import Cluedo.Board.*;
 import Cluedo.Card.Card;
 import Cluedo.Card.PersonCard;
 import Cluedo.Card.RoomCard;
@@ -31,6 +28,9 @@ public class Game extends GUI{
 
 	@Override
 	protected void drawBoard(Graphics g) {
+		g.setColor(WallTile.wallColor);
+		g.fillRect(0, 0, 500,500);
+
 		if (board != null) {
 			board.draw(g);
 		}
@@ -61,10 +61,10 @@ public class Game extends GUI{
 
 	@Override
 	protected void drawCards(Graphics g) {
+		g.setColor(WallTile.wallColor);
+		g.fillRect(0, 0, 1150, 200);
 		int xPos = 200;
 		if (currentPlayer != null) {
-			g.setColor(new Color(0x060606));
-			g.fillRect(0, 0, 1150, 200);
 			g.setColor(new Color (0x75525D));
 			for (Card c : currentPlayer.hand) {
 				c.draw(g, xPos, 10);
@@ -131,10 +131,6 @@ public class Game extends GUI{
 	 * Deals with general playing mechanics until the game is over
 	 */
 	public void play() {
-		textArea.setText("");
-		textArea.append("*************************************************\n"
-                +"CLUEDO\n"
-				+"*************************************************\n");
 		int roundNumber = 1;
 		boolean ready;
 		gameLoop:
@@ -143,110 +139,137 @@ public class Game extends GUI{
 			int playerNumber = 1;
 			int numPlayersLeft = 0;
 			for (Player p : players) {
-				boardGraphics.updateUI();
-				currentPlayer = p;
-				drawCards(cardGraphics.getGraphics());
-				if (p.hasLost) {
-					playerNumber++;
-					continue;
-				}
-				//System.out.println(board);
-				//System.out.println("Player " + playerNumber + "'s turn! (" + p.personType.toString() + ") Rolling dice...");
-				textArea.append(p.personType.toString() +"'s turn!\n");
-				diceNumber1 = Turn.rollDice();
-				diceNumber2 = Turn.rollDice();
-				drawDice(cardGraphics.getGraphics());
-				textArea.append("You have to take " + (diceNumber1 + diceNumber2) + " moves. What do you want to do?");
+				if (!p.hasLost) {
+					JDialog readySelect = new JDialog();
+					readySelect.setLocation(435, 275);
+					readySelect.setResizable(false);
+					readySelect.setBackground(WallTile.wallColor);
+					readySelect.setSize(new Dimension(280, 150));
 
-				//get input from player
-				left.setVisible(true);
-				right.setVisible(true);
-				down.setVisible(true);
-				up.setVisible(true);
+					JPanel readySelectPanel = new JPanel();
+					readySelectPanel.setLayout(new GridLayout(2, 1));
+					readySelectPanel.setBackground(WallTile.wallColor);
+					readySelectPanel.setBorder(BorderFactory.createLineBorder(Color.white, 4));
 
-				int movesTaken = 0;
-				doMoves(movesTaken, diceNumber1 + diceNumber2, p, boardGraphics.getGraphics());
+					JLabel readyLabel = new JLabel("Player " + playerNumber + "'s turn. Are you ready?");
+					readyLabel.setFont(new Font("Montserrat", Font.PLAIN, 15));
+					readyLabel.setForeground(RoomTile.lightRoomTile);
+					readyLabel.setHorizontalAlignment(0);
+					readyLabel.setVisible(true);
+					readySelectPanel.add(readyLabel);
 
-				left.setVisible(false);
-				right.setVisible(false);
-				down.setVisible(false);
-				up.setVisible(false);
+					readySelectPanel.add(this.ready);
+					readySelect.add(readySelectPanel);
+					readySelect.setVisible(true);
 
-				RoomCard.RoomType r = board.getPlayerRoom(p);
-				Turn t = new Turn(players);
-				if (r != null) {
-					textArea.append("You have entered the " + r.toString()+".\n");
-					textArea.append("The weapons in this room are: \n");
-					for (Map.Entry<WeaponCard.WeaponType, RoomCard.RoomType> e: weaponsInRoom.entrySet()){
-						if (e.getValue() == r){
-							textArea.append(e.getKey()+"\n");
-						}
+					ready = false;
+					do {
+						ready = doReady();
+					} while (!ready);
+
+					readySelect.setVisible(false);
+					boardGraphics.updateUI();
+					currentPlayer = p;
+					drawCards(cardGraphics.getGraphics());
+					if (p.hasLost) {
+						playerNumber++;
+						continue;
 					}
-					textArea.append("Would you like to make a suggestion?\n");
-					boolean suggest = yesOrNo();
-					if (suggest) {
-						Suggestion suggestion = t.makeSuggestion(r, false, this);
-						clearSelections();
-						weaponsInRoom.remove(suggestion.weapon);
-						weaponsInRoom.put(suggestion.weapon, suggestion.room);
-						Player inSuggestion = this.getPlayerFromType(suggestion.person);
-						if (inSuggestion != null) {
-							board.movePlayerToPlayer(p, inSuggestion);
+					System.out.println(board);
+					textArea.append("Player " + playerNumber + "'s turn! (" + p.personType.toString() + ") Rolling dice...\n");
+					diceNumber1 = Turn.rollDice();
+					diceNumber2 = Turn.rollDice();
+					drawDice(cardGraphics.getGraphics());
+					textArea.append("You have to take " + (diceNumber1 + diceNumber2) + " moves. What do you want to do?\n");
+
+					//get input from player
+					left.setVisible(true);
+					right.setVisible(true);
+					down.setVisible(true);
+					up.setVisible(true);
+
+					int movesTaken = 0;
+					doMoves(movesTaken, diceNumber1 + diceNumber2, p, boardGraphics.getGraphics());
+
+					left.setVisible(false);
+					right.setVisible(false);
+					down.setVisible(false);
+					up.setVisible(false);
+
+					RoomCard.RoomType r = board.getPlayerRoom(p);
+					Turn t = new Turn(players);
+					if (r != null) {
+						textArea.append("You have entered the " + r.toString() + "\n");
+						textArea.append("The weapons in this room are: ");
+						for (Map.Entry<WeaponCard.WeaponType, RoomCard.RoomType> e : weaponsInRoom.entrySet()) {
+							if (e.getValue() == r) {
+								textArea.append(e.getKey().toString() + "\n");
+							}
 						}
-						t.disproveSuggestion(p, suggestion, this);
-					}
-						textArea.append("Would you now like to make an accusation?\n" 
-					                    + " This is will be your final guess\n");
+						textArea.append("Would you like to make a suggestion?\n");
+						boolean suggest = yesOrNo();
+						if (suggest) {
+							Suggestion suggestion = t.makeSuggestion(r, false, this);
+							clearSelections();
+							weaponsInRoom.remove(suggestion.weapon);
+							weaponsInRoom.put(suggestion.weapon, suggestion.room);
+							Player inSuggestion = this.getPlayerFromType(suggestion.person);
+							if (inSuggestion != null) {
+								board.movePlayerToPlayer(p, inSuggestion);
+							}
+							t.disproveSuggestion(p, suggestion, this);
+						}
+						textArea.append("Would you now like to make an accusation? This is will be your final guess\n");
 						boolean accuse = yesOrNo();
 						if (accuse) {
 							Suggestion accusation = t.makeSuggestion(r, true, this);
 							boolean win = t.accusationCheck(p, accusation, envelope);
 							clearSelections();
 							if (win) {
-								textArea.setText("");
-								textArea.append("*************************************************\n"
-						                +"CLUEDO\n"
-										+"*************************************************\n");
-								//System.out.println("Player " + playerNumber + " has solved the murder, and wins the game!");
-								textArea.append(p.personType.toString()+" has solved the murder \n"
-										        + " wins!!\n");
+								textArea.append("Player " + playerNumber + " has solved the murder, and wins the game!\n");
 								break gameLoop;
 							} else {
-								System.out.println("Player " + playerNumber + " has guessed incorrectly. They are now out of the game.");
-								textArea.append(p.personType.toString()+" is out of the game\n");
+								textArea.append("Player " + playerNumber + " has guessed incorrectly. They are now out of the game.");
 								p.hasLost = true;
 								board.killPlayer(p);
 							}
 						}
 
+					}
 				}
 				playerNumber++;
+				textArea.setText("");
 			}
 			for (Player p: players){
 				if (!p.hasLost){
 					numPlayersLeft++;
 				}
 			}
-			textArea.setText("");
-			textArea.append("*************************************************\n"
-	                +"CLUEDO\n"
-					+"*************************************************\n");
 			if (numPlayersLeft == 1){
-				//System.out.println("Only one player left. Game Over");
-				textArea.append("Game Over\n");
+
 				break gameLoop;
+
 			}
-			//System.out.println("Round " + roundNumber + " finished! Ready for the next round?\n");
-			textArea.append("Round " + roundNumber + " finished!\n");
+			System.out.println("Round " + roundNumber + " finished! Ready for the next round?");
 			//wait for the players to be ready for the next round
-			ready = false;
-			do {
-				ready = doReady();
-			}
-			while (!ready);
-			this.ready.setVisible(false);
 			roundNumber++;
 		}
+		JDialog end = new JDialog();
+		end.setLocation(435, 275);
+		end.setResizable(false);
+		end.setBackground(WallTile.wallColor);
+		end.setSize(new Dimension(280, 150));
+
+		JPanel endPanel = new JPanel();
+		endPanel.setBackground(WallTile.wallColor);
+
+		JLabel endLabel = new JLabel("Game Over");
+		endLabel.setFont(new Font("Montserrat", Font.PLAIN, 11));
+		endLabel.setForeground(RoomTile.lightRoomTile);
+
+		endPanel.add(endLabel);
+		end.add(endPanel);
+		end.setVisible(true);
 	}
 
 
@@ -265,67 +288,79 @@ public class Game extends GUI{
 				}
 			}
 		});
-		textArea.setBackground(Color.black);
-		textArea.setFont(new Font("Dialog", Font.BOLD, 15));
-		textArea.setForeground(Color.magenta);
-		textArea.append("*************************************************\n"
-		                +"CLUEDO\n");
-		textArea.append("*************************************************\n"
-						 + "Welcome to Cluedo!\n" 
-				         + "How many people are playing?\n");
+		textArea.setBackground(WallTile.wallColor);
+
+		JDialog start = new JDialog();
+		start.setLocation(435, 275);
+		start.setResizable(false);
+		start.setBackground(WallTile.wallColor);
+		start.setSize(new Dimension(280, 150));
+
+		JPanel startComponent = new JPanel();
+		startComponent.setLayout(new GridLayout(2, 1));
+		startComponent.setBackground(WallTile.wallColor);
+
+		JLabel startLabel = new JLabel("Welcome to Cluedo! How many are playing?");
+		startLabel.setFont(new Font("Montserrat", Font.PLAIN, 11));
+		startLabel.setForeground(RoomTile.lightRoomTile);
+		startLabel.setHorizontalAlignment(0);
+		startComponent.add(startLabel);
+
+		JPanel startButtons = new JPanel();
+		startButtons.setLayout(new GridLayout(1, 4));
+		startComponent.add(startButtons);
+		startComponent.setBorder(BorderFactory.createLineBorder(Color.white, 4));
+		start.add(startComponent);
+
+		for (JButton b: playerNumbers){
+			startButtons.add(b);
+			b.setVisible(true);
+		}
+
+		start.setVisible(true);
+		int players;
 
 		// get the number of players playing
-				int players;
 
-				do {
-					players = getPlayerNumbers(); //GUI method that allows user to click buttons
-				} while (players == -1);
+		do {
+			players = getPlayerNumbers(); //GUI method that allows user to click buttons
+		} while (players == -1);
 
-				final String[] names = new String[players];
-				int[] i = {0};
-				JTextField name = new JTextField(10);
-				controls.add(name);
-				layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, name, 0, SpringLayout.HORIZONTAL_CENTER, controls);
-				layout.putConstraint(SpringLayout.NORTH, name, 20, SpringLayout.NORTH, controls);
-				name.setPreferredSize(new Dimension(10, 20));
+		start.setVisible(false);
 
-				int finalPlayers = players;
-				boolean[] done = {false};
-				boolean first = true;
-				int prevPlayer = -1;
-				while (!done[0]){
-					if (prevPlayer != i[0] && i[0] < finalPlayers) {
-						textArea.append("Enter player " + (i[0] + 1) + "'s name on the right. \n");
-						prevPlayer++;
-					}
-					ActionListener listen = new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						names[i[0]] = name.getText();
-						i[0]++;
-						name.selectAll();
-						if (i[0] == finalPlayers) {
-							done[0] = true;
-						}
-					}
-				};
-					if (first) {
-						name.addActionListener(listen);
-						first = false;
-					}
-				}
-				//name.removeActionListener(listen);
-				name.setVisible(false);
-				int namesPrinted = 1;
-				for (String n : names){
-					textArea.append(n + " is Player " + namesPrinted + ". \n");
-					namesPrinted++;
-				}
+		JDialog playerSelect = new JDialog();
+		playerSelect.setLocation(435, 275);
+		playerSelect.setResizable(false);
+		playerSelect.setBackground(WallTile.wallColor);
+		playerSelect.setSize(new Dimension(280, 300));
+
+		JPanel playerSelectPanel = new JPanel();
+		playerSelectPanel.setLayout(new GridLayout(2, 1));
+		playerSelectPanel.setBackground(WallTile.wallColor);
+		playerSelectPanel.setBorder(BorderFactory.createLineBorder(Color.white, 4));
+		playerSelect.add(playerSelectPanel);
+
+		JLabel playerSelectLabel = new JLabel("");
+		playerSelectLabel.setFont(new Font("Montserrat", Font.PLAIN, 15));
+		playerSelectLabel.setForeground(RoomTile.lightRoomTile);
+		playerSelectLabel.setHorizontalAlignment(0);
+		playerSelectLabel.setVisible(true);
+		playerSelectPanel.add(playerSelectLabel);
+
+		JPanel charButtons = new JPanel();
+		charButtons.setLayout(new GridLayout(6, 1));
+		playerSelectPanel.add(charButtons);
+
+		for (Map.Entry<PersonCard.PersonType, JRadioButton> e: people.entrySet()){
+			charButtons.add(e.getValue());
+			e.getValue().setVisible(true);
+		}
+		playerSelect.setVisible(true);
 
 		//let players select characters
 		int index = 1;
 		while (this.players.size() < players){
-			textArea.append("Player " + index + ": choose a character to play \n");
+			playerSelectLabel.setText("Player " + index + " pick a character");
 			PersonCard.PersonType selected = chooseChar();
 			this.players.add(new Player(selected));
 			index++;
@@ -333,9 +368,30 @@ public class Game extends GUI{
 		for (JRadioButton button : people.values()){
 			button.setVisible(false);
 		}
+		playerSelect.setVisible(false);
 
-		textArea.append("Ready to shuffle and deal?\n");
-		
+		JDialog readySelect = new JDialog();
+		readySelect.setLocation(435, 275);
+		readySelect.setResizable(false);
+		readySelect.setBackground(WallTile.wallColor);
+		readySelect.setSize(new Dimension(280, 150));
+
+		JPanel readySelectPanel = new JPanel();
+		readySelectPanel.setLayout(new GridLayout(2, 1));
+		readySelectPanel.setBackground(WallTile.wallColor);
+		readySelectPanel.setBorder(BorderFactory.createLineBorder(Color.white, 4));
+
+		JLabel readyLabel = new JLabel("Ready to shuffle, deal and play?");
+		readyLabel.setFont(new Font("Montserrat", Font.PLAIN, 15));
+		readyLabel.setForeground(RoomTile.lightRoomTile);
+		readyLabel.setHorizontalAlignment(0);
+		readyLabel.setVisible(true);
+		readySelectPanel.add(readyLabel);
+
+		readySelectPanel.add(ready);
+		readySelect.add(readySelectPanel);
+		readySelect.setVisible(true);
+
 		//waits for the player to say they are ready
 		boolean ready;
 		do {
@@ -343,16 +399,10 @@ public class Game extends GUI{
 		} while (!ready);
 
 		this.ready.setVisible(false);
+		readySelect.setVisible(false);
 		
 		//deal cards and displays information to the players
 		dealDeck();
-		textArea.setText("");
-		textArea.append("*************************************************\n"
-				+"CLUEDO\n");
-		textArea.append("*************************************************\n");
-		for (Player p : this.players) {
-			textArea.append(p.toString() + " has the cards:\n" + p.handToString());
-		}
 
 		//create the board
 		try {
@@ -369,19 +419,11 @@ public class Game extends GUI{
 			weaponsInRoom.put(w, rooms.get(roomToPut));
 			roomToPut++;
 		}
-/*
+
 		for (Map.Entry<WeaponCard.WeaponType, RoomCard.RoomType> e: weaponsInRoom.entrySet()){
-			System.out.println("The weapon " + e.getKey() + " is in the room " + e.getValue());
+			textArea.append("The weapon " + e.getKey() + " is in the room " + e.getValue() + "\n");
 		}
- */
-		textArea.append("Everything is ready! Ready to start?\n");
-		
-		//waits for the player to say they are ready
-		Boolean sReady = false;
-		do {
-			sReady = doReady();
-		} while (!sReady);
-		this.ready.setVisible(false);
+
 	}
 
 	public PersonCard.PersonType chooseChar(){
@@ -407,10 +449,6 @@ public class Game extends GUI{
 	 */
 	private int plSelected = -1;
 	public int getPlayerNumbers(){
-		for (JButton b: playerNumbers){
-			b.setVisible(true);
-		}
-
 		for (JButton b : playerNumbers){
 			b.addActionListener(e -> {
 				plSelected = 3 + playerNumbers.indexOf(b);
@@ -520,6 +558,7 @@ public class Game extends GUI{
 				up.removeActionListener(listener);
 				down.removeActionListener(listener);
 			}
+			boardGraphics.updateUI();
 		}
 	}
 
