@@ -150,13 +150,13 @@ public class Game extends GUI{
 					playerNumber++;
 					continue;
 				}
-				System.out.println(board);
+				//System.out.println(board);
 				//System.out.println("Player " + playerNumber + "'s turn! (" + p.personType.toString() + ") Rolling dice...");
 				textArea.append(p.personType.toString() +"'s turn!\n");
 				diceNumber1 = Turn.rollDice();
 				diceNumber2 = Turn.rollDice();
 				drawDice(cardGraphics.getGraphics());
-				System.out.println("You have to take " + (diceNumber1 + diceNumber2) + " moves. What do you want to do?");
+				textArea.append("You have to take " + (diceNumber1 + diceNumber2) + " moves. What do you want to do? \n");
 
 				//get input from player
 				left.setVisible(true);
@@ -207,12 +207,11 @@ public class Game extends GUI{
 								textArea.append("*************************************************\n"
 						                +"CLUEDO\n"
 										+"*************************************************\n");
-								System.out.println("Player " + playerNumber + " has solved the murder, and wins the game!");
+								textArea.append("Player " + playerNumber + " has solved the murder, and wins the game! \n");
 								textArea.append(p.personType.toString()+" wins!!\n");
 								break gameLoop;
 							} else {
-								System.out.println("Player " + playerNumber + " has guessed incorrectly. They are now out of the game.");
-								textArea.append(p.personType.toString()+" is out of the game\n");
+								textArea.append("Player " + playerNumber + " has guessed incorrectly. They are now out of the game. \n");
 								p.hasLost = true;
 								board.killPlayer(p);
 							}
@@ -280,6 +279,47 @@ public class Game extends GUI{
 			players = getPlayerNumbers(); //GUI method that allows user to click buttons
 		} while (players == -1);
 
+		final String[] names = new String[players];
+		int[] i = {0};
+		JTextField name = new JTextField(10);
+		controls.add(name);
+		layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, name, 0, SpringLayout.HORIZONTAL_CENTER, controls);
+		layout.putConstraint(SpringLayout.NORTH, name, 20, SpringLayout.NORTH, controls);
+		name.setPreferredSize(new Dimension(10, 20));
+
+		int finalPlayers = players;
+		boolean[] done = {false};
+		boolean first = true;
+		int prevPlayer = -1;
+		while (!done[0]){
+			if (prevPlayer != i[0] && i[0] < finalPlayers) {
+				textArea.append("Enter player " + (i[0] + 1) + "'s name on the right. \n");
+				prevPlayer++;
+			}
+			ActionListener listen = new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				names[i[0]] = name.getText();
+				i[0]++;
+				name.selectAll();
+				if (i[0] == finalPlayers) {
+					done[0] = true;
+				}
+			}
+		};
+			if (first) {
+				name.addActionListener(listen);
+				first = false;
+			}
+		}
+		//name.removeActionListener(listen);
+		name.setVisible(false);
+		int namesPrinted = 1;
+		for (String n : names){
+			textArea.append(n + " is Player " + namesPrinted + ". \n");
+			namesPrinted++;
+		}
+
 		//let players select characters
 		int index = 1;
 		while (this.players.size() < players){
@@ -304,9 +344,12 @@ public class Game extends GUI{
 		
 		//deal cards and displays information to the players
 		dealDeck();
-
+		textArea.setText("");
+		textArea.append("*************************************************\n"
+				+"CLUEDO\n");
+		textArea.append("*************************************************\n");
 		for (Player p : this.players) {
-			System.out.println(p.toString() + " has the cards:\n" + p.handToString());
+			textArea.append(p.toString() + " has the cards:\n" + p.handToString());
 		}
 
 		//create the board
@@ -325,9 +368,10 @@ public class Game extends GUI{
 			roomToPut++;
 		}
 
+		/*
 		for (Map.Entry<WeaponCard.WeaponType, RoomCard.RoomType> e: weaponsInRoom.entrySet()){
-			System.out.println("The weapon " + e.getKey() + " is in the room " + e.getValue());
-		}
+			textArea.append("The weapon " + e.getKey() + " is in the room " + e.getValue() + "\n");
+		}*/
  
 		textArea.append("Everything is ready! Ready to start?\n");
 		
