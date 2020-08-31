@@ -131,11 +131,15 @@ public class Game extends GUI{
 	 * Deals with general playing mechanics until the game is over
 	 */
 	public void play() {
+		textArea.setText("");
+		textArea.append("*************************************************\n"
+                +"CLUEDO\n"
+				+"*************************************************\n");
 		int roundNumber = 1;
 		boolean ready;
 		gameLoop:
 		while (true) {
-			textArea.append("Round " + roundNumber + " starting!");
+			textArea.append("Round " + roundNumber + " starting!\n");
 			int playerNumber = 1;
 			int numPlayersLeft = 0;
 			for (Player p : players) {
@@ -148,6 +152,7 @@ public class Game extends GUI{
 				}
 				System.out.println(board);
 				System.out.println("Player " + playerNumber + "'s turn! (" + p.personType.toString() + ") Rolling dice...");
+				textArea.append(p.personType.toString() +"'s turn!\n");
 				diceNumber1 = Turn.rollDice();
 				diceNumber2 = Turn.rollDice();
 				drawDice(cardGraphics.getGraphics());
@@ -250,14 +255,6 @@ public class Game extends GUI{
 		textArea.setForeground(Color.magenta);
 		textArea.append("*************************************************\n"
 		                +"CLUEDO\n");
-		
-//		textArea.append(" a88888b.  dP                            dP          \r\n" +
-//						   "d8'   `88  88                            88          \r\n" + 
-//						   "88         88  dP    dP  .d8888b.  .d888b88  .d8888b. \r\n" + 
-//						   "88         88  88    88  88ooood8  88'  `88  88'  `88 \r\n" + 
-//						   "Y8.   .88  88  88.  .88  88.  ...  88.  .88  88.  .88 \r\n" + 
-//						   " Y88888P'  dP  `88888P'  `88888P'  `88888P8  `88888P'\n");
-//		
 		textArea.append("*************************************************\n"
 						 + "Welcome to Cluedo!\n" 
 				         + "How many people are playing?\n");
@@ -317,7 +314,7 @@ public class Game extends GUI{
 		for (Map.Entry<WeaponCard.WeaponType, RoomCard.RoomType> e: weaponsInRoom.entrySet()){
 			System.out.println("The weapon " + e.getKey() + " is in the room " + e.getValue());
 		}
-
+ 
 		textArea.append("Everything is ready! Ready to start?\n");
 		
 		//waits for the player to say they are ready
